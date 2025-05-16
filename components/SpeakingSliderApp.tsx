@@ -10,7 +10,7 @@ const WINDOW_LABELS: Record<string, string> = {
     unknown: "미지의 창",
 }
 
-const result = studentResults[selectedStudent as keyof typeof studentResults]
+
 const studentResults = {
     하현우: {
         open: ["创造力", "好奇心"],
@@ -31,7 +31,7 @@ const studentResults = {
         unknown: ["希望"],
     },
 }
-
+const result = studentResults[selectedStudent as keyof typeof studentResults]
 // 👉 완성된 강점 데이터
 const strengths = [
     {
