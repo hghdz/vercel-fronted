@@ -15,19 +15,8 @@ const studentResults = {
     hidden: ["勇敢"],
     unknown: ["领导力"],
   },
-  김민지: {
-    open: ["热情", "善良"],
-    blind: ["洞察力"],
-    hidden: ["坚持"],
-    unknown: ["信仰"],
-  },
-  박소연: {
-    open: ["诚实", "爱心"],
-    blind: ["懂别人"],
-    hidden: ["谨慎"],
-    unknown: ["希望"],
-  },
 }
+
 const strengths = [
     {
         hanzi: "创造力",
@@ -278,12 +267,12 @@ export default function SpeakingSliderApp() {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  const result = studentResults[selectedStudent as keyof typeof studentResults]
+  const result = studentResults[selectedStudent]
 
   const slides = useMemo(() => {
     const all: any[] = []
     for (const type of WINDOW_ORDER) {
-      const hanziList = result[type as keyof typeof result] || []
+      const hanziList = result[type] || []
       hanziList.forEach((hanzi: string) => {
         const data = strengths.find((s) => s.hanzi === hanzi)
         if (data) all.push({ ...data, windowType: type })
@@ -293,26 +282,6 @@ export default function SpeakingSliderApp() {
   }, [result])
 
   const current = slides[index]
-  if (!current) return <div>결과 없음</div>
-
-  let sentence = "", pinyin = "", meaning = ""
-  if (current.windowType === "unknown") {
-    sentence = current.unknownSentence
-    pinyin = current.unknownPinyin
-    meaning = current.unknownDesc
-  } else {
-    const prefix = current.windowType === "blind"
-      ? "朋友说" : current.windowType === "hidden"
-      ? "我觉得" : ""
-    const pinyinPrefix = current.windowType === "blind"
-      ? "Péngyou shuō " : current.windowType === "hidden"
-      ? "Wǒ juéde " : ""
-    sentence = prefix + current.baseSentence
-    pinyin = pinyinPrefix + current.basePinyin
-    meaning = current.desc
-  }
-
-  const red = (t: string) => `<span style='color:red;font-weight:bold;'>${t}</span>`
 
   const startRecording = async () => {
     try {
@@ -342,101 +311,77 @@ export default function SpeakingSliderApp() {
     setIsRecording(false)
   }
 
-  return (
-    <div className="flex flex-col items-center gap-4 p-6">
-      <select
-        value={selectedStudent}
-        onChange={(e) => { setSelectedStudent(e.target.value); setIndex(0); }}
-        className="mb-2 px-3 py-2 border rounded"
-      >
-        {Object.keys(studentResults).map((name) => (
-          <option key={name} value={name}>{name}</option>
-        ))}
-      </select>
+  if (!current) return <div className="text-center p-4">결과 없음</div>
 
+  const { hanzi, baseSentence, basePinyin, desc, unknownSentence, unknownPinyin, unknownDesc, windowType } = current
+
+  const isUnknown = windowType === "unknown"
+
+  const sentence = isUnknown ? unknownSentence : baseSentence
+  const pinyin = isUnknown ? unknownPinyin : basePinyin
+  const meaning = isUnknown ? unknownDesc : desc
+
+  const highlight = (text: string, word: string) => text.replaceAll(word, `<span class='text-red-600 font-bold'>${word}</span>`)
+
+  return (
+    <div className="max-w-xl mx-auto p-4 flex flex-col items-center">
+      {/* 프로그레스 바 */}
       <div className="flex justify-center gap-2 mb-4">
-        {WINDOW_ORDER.map((type) => {
-          const isActive = current.windowType === type
-          const colorMap: Record<string, string> = {
-            open: "bg-green-400",
-            blind: "bg-blue-400",
-            hidden: "bg-yellow-400",
-            unknown: "bg-gray-400",
-          }
-          return (
-            <div
-              key={type}
-              className={`px-4 py-1 rounded-full text-sm font-medium shadow-md transition-all duration-200 ${
-                isActive
-                  ? `${colorMap[type]} text-white scale-105`
-                  : "bg-gray-100 text-gray-500"
-              }`}
-            >
-              {WINDOW_LABELS[type]}
-            </div>
-          )
-        })}
+        {WINDOW_ORDER.map((type) => (
+          <div
+            key={type}
+            className={`px-4 py-1 rounded-full text-sm font-medium shadow-md transition-all duration-200 ${
+              current.windowType === type
+                ? "bg-purple-500 text-white scale-105"
+                : "bg-gray-200 text-gray-600"
+            }`}
+          >
+            {WINDOW_LABELS[type]}
+          </div>
+        ))}
       </div>
 
-      <img
-        src={`https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/${current.hanzi}.png`}
-        alt={current.hanzi}
-        className="w-64 h-64 object-contain"
-      />
+      {/* 슬라이더 */}
+      <div className="flex items-center gap-4">
+        <button onClick={() => setIndex((i) => Math.max(0, i - 1))} className="text-2xl">◀</button>
+        <img
+          src={`https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images/${hanzi}.png`}
+          alt={hanzi}
+          className="w-64 h-64 object-contain"
+        />
+        <button onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))} className="text-2xl">▶</button>
+      </div>
 
-      <p
-        dangerouslySetInnerHTML={{ __html: red(sentence) }}
-        className="text-xl"
-      />
-      <p
-        dangerouslySetInnerHTML={{ __html: red(pinyin) }}
-        className="text-base text-gray-600"
-      />
-      <p
-        dangerouslySetInnerHTML={{ __html: red(meaning) }}
-        className="text-base text-gray-500"
-      />
+      {/* 문장 */}
+      <div className="text-center mt-4 space-y-2">
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence, hanzi) }} className="text-xl font-medium" />
+        <p dangerouslySetInnerHTML={{ __html: highlight(pinyin, current.pinyin) }} className="text-base text-gray-600 font-notosc" />
+        <p dangerouslySetInnerHTML={{ __html: highlight(meaning, desc) }} className="text-base text-gray-500" />
+      </div>
 
-      <div className="flex gap-4 mt-4">
+      {/* 버튼 */}
+      <div className="flex gap-3 mt-4">
         <button
           onClick={() => {
             const utter = new SpeechSynthesisUtterance(sentence)
             utter.lang = "zh-CN"
             speechSynthesis.speak(utter)
           }}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          🔊 듣기
-        </button>
-
+          className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600 active:translate-y-[2px]"
+        >🔊 듣기</button>
         <button
-          onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
-          className={`px-4 py-2 text-white rounded transition ${
-            isRecording
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-blue-500 hover:bg-blue-600"
+          onClick={() => !mediaRecorder ? startRecording() : stopRecording()}
+          className={`text-white px-4 py-2 rounded shadow active:translate-y-[2px] ${
+            isRecording ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
           }`}
-        >
-          {isRecording ? "⏹ 녹음 중지" : "🎙 녹음 시작"}
-        </button>
+        >{isRecording ? "⏹ 중지" : "🎙 녹음"}</button>
+        <button
+          onClick={() => audioRef.current?.play()}
+          className="bg-gray-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 active:translate-y-[2px]"
+        >▶ 재생</button>
       </div>
 
       <audio ref={audioRef} className="hidden" />
-
-      <div className="flex gap-4 mt-6">
-        <button
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-        >
-          ◀ 이전
-        </button>
-        <button
-          onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          다음 ▶
-        </button>
-      </div>
     </div>
   )
 }
