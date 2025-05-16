@@ -53,35 +53,36 @@ const SpeakingSliderApp = () => {
   const highlight = (text: string, keyword: string) =>
     text.replace(new RegExp(keyword, 'g'), `<span style="color:red;font-weight:bold;">${keyword}</span>`)
 
-  const sentence = {
-    zh: (
-      current.windowType === "blind"
-        ? `朋友说${current.baseSentence}`
-        : current.windowType === "hidden"
-        ? `我觉得${current.baseSentence}`
-        : current.windowType === "unknown"
-        ? current.unknownSentence
-        : current.baseSentence
-),
-    py: (
-      current.windowType === "blind"
-        ? `Péngyou shuō ${current.basePinyin}`
-        : current.windowType === "hidden"
-        ? `Wǒ juéde ${current.basePinyin}`
-        : current.windowType === "unknown"
-        ? current.unknownPinyin
-        : current.basePinyin
-),
-    kr: (
-      current.windowType === "blind"
-        ? `친구가 말하길 ${current.desc}`
-        : current.windowType === "hidden"
-        ? `내가 생각하기에 ${current.desc}`
-        : current.windowType === "unknown"
-        ? current.unknownDesc
-        : current.desc
-),
-  }
+const sentence = {
+  zh: (
+    current.windowType === "blind"
+      ? `朋友说${current.baseSentence}`
+      : current.windowType === "hidden"
+      ? `我觉得${current.baseSentence}`
+      : current.windowType === "unknown"
+      ? current.unknownSentence
+      : current.baseSentence
+  ),
+  py: (
+    current.windowType === "blind"
+      ? `Péngyou shuō ${current.basePinyin}`
+      : current.windowType === "hidden"
+      ? `Wǒ juéde ${current.basePinyin}`
+      : current.windowType === "unknown"
+      ? current.unknownPinyin
+      : current.basePinyin
+  ),
+  kr: (
+    current.windowType === "blind"
+      ? `친구가 말하길 ${current.desc}`
+      : current.windowType === "hidden"
+      ? `내가 생각하기에 ${current.desc}`
+      : current.windowType === "unknown"
+      ? current.unknownDesc
+      : current.desc
+  ),
+}
+
 
   const startRecording = async () => {
     try {
