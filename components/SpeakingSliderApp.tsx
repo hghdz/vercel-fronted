@@ -131,33 +131,44 @@ const SpeakingSliderApp = () => {
       </div>
 
       {/* 슬라이더 */}
-      <div className="relative w-80 h-72 flex items-center justify-center">
-        <button
-          onClick={() => {
-            setDirection(-1)
-            setIndex((i) => Math.max(0, i - 1))
-          }}
-          className="absolute left-0 text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-        >
-          ◀
-        </button>
+      <div className="flex items-center justify-center gap-4">
+  <button
+    onClick={() => {
+      setDirection(-1)
+      setIndex((i) => Math.max(0, i - 1))
+    }}
+    className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
+  >
+    ◀
+  </button>
 
-        <div className="w-64 h-64 flex items-center justify-center">
-          {current && (
-  <AnimatePresence initial={false} custom={direction}>
-    <motion.img
-      key={current.hanzi}
-      src={`${IMAGE_BASE}/${current.hanzi}.png`}
-      alt={current.hanzi}
-      className="w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl"
-      initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
-      transition={{ duration: 0.4 }}
-    />
-  </AnimatePresence>
-)}
-        </div>
+  <div className="w-64 h-64 flex items-center justify-center">
+    {current && (
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.img
+          key={current.hanzi}
+          src={`${IMAGE_BASE}/${current.hanzi}.png`}
+          alt={current.hanzi}
+          className="w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl"
+          initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        />
+      </AnimatePresence>
+    )}
+  </div>
+
+  <button
+    onClick={() => {
+      setDirection(1)
+      setIndex((i) => Math.min(slides.length - 1, i + 1))
+    }}
+    className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
+  >
+    ▶
+  </button>
+</div>
 
         <button
           onClick={() => {
