@@ -1,38 +1,24 @@
+"use client"
 import * as React from "react"
-
 
 // 창 유형 분류
 const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"]
 const WINDOW_LABELS: Record<string, string> = {
-    open: "열린 창",
-    blind: "보이지 않는 창",
-    hidden: "숨긴 창",
-    unknown: "미지의 창",
+  open: "열린 창",
+  blind: "보이지 않는 창",
+  hidden: "숨긴 창",
+  unknown: "미지의 창",
 }
 
-const [selectedStudent, setSelectedStudent] = React.useState("하현우")
+// 학생별 강점 결과
 const studentResults = {
-    하현우: {
-        open: ["创造力", "好奇心"],
-        blind: ["判断力"],
-        hidden: ["勇敢"],
-        unknown: ["领导力"],
-    },
-    김민지: {
-        open: ["热情", "善良"],
-        blind: ["洞察力"],
-        hidden: ["坚持"],
-        unknown: ["信仰"],
-    },
-    박소연: {
-        open: ["诚实", "爱心"],
-        blind: ["懂别人"],
-        hidden: ["谨慎"],
-        unknown: ["希望"],
-    },
+  하현우: {
+    open: ["创造力", "好奇心"],
+    blind: ["判断力"],
+    hidden: ["勇敢"],
+    unknown: ["领导力"],
+  },
 }
-const result = studentResults[selectedStudent as keyof typeof studentResults]
-// 👉 완성된 강점 데이터
 const strengths = [
     {
         hanzi: "创造力",
@@ -276,207 +262,183 @@ const strengths = [
     },
 ]
 
-function SpeakingSliderApp() {
-    const [selectedStudent, setSelectedStudent] = React.useState("하현우")
-    const [index, setIndex] = React.useState(0)
-    const [isRecording, setIsRecording] = React.useState(false)
-    const [mediaRecorder, setMediaRecorder] =
-        React.useState<MediaRecorder | null>(null)
-    const audioRef = React.useRef<HTMLAudioElement | null>(null)
+export default function SpeakingSliderApp() {
+  const [selectedStudent, setSelectedStudent] = React.useState("하현우")
+  const [index, setIndex] = React.useState(0)
+  const [isRecording, setIsRecording] = React.useState(false)
+  const [mediaRecorder, setMediaRecorder] = React.useState<MediaRecorder | null>(null)
+  const audioRef = React.useRef<HTMLAudioElement | null>(null)
 
-    const result = studentResults[selectedStudent]
+  const result = studentResults[selectedStudent as keyof typeof studentResults]
+  const slides = React.useMemo(() => {
+    const all: any[] = []
+    for (const type of WINDOW_ORDER) {
+      const hanziList = result[type as keyof typeof result] || []
+      hanziList.forEach((hanzi: string) => {
+        const data = strengths.find((s) => s.hanzi === hanzi)
+        if (data) all.push({ ...data, windowType: type })
+      })
+    }
+    return all
+  }, [result])
 
-    const slides = React.useMemo(() => {
-        const all: any[] = []
-        for (const type of WINDOW_ORDER) {
-            const hanziList = result[type] || []
-            hanziList.forEach((hanzi: string) => {
-                const data = strengths.find((s) => s.hanzi === hanzi)
-                if (data) all.push({ ...data, windowType: type })
-            })
+  const current = slides[index]
+  if (!current) return <div>결과 없음</div>
+
+  let sentence = ""
+  let pinyin = ""
+  let meaning = ""
+
+  if (current.windowType === "unknown") {
+    sentence = current.unknownSentence
+    pinyin = current.unknownPinyin
+    meaning = current.unknownDesc
+  } else {
+    const prefix =
+      current.windowType === "blind"
+        ? "朋友说"
+        : current.windowType === "hidden"
+        ? "我觉得"
+        : ""
+    const pinyinPrefix =
+      current.windowType === "blind"
+        ? "Péngyou shuō "
+        : current.windowType === "hidden"
+        ? "Wǒ juéde "
+        : ""
+
+    sentence = prefix + current.baseSentence
+    pinyin = pinyinPrefix + current.basePinyin
+    meaning = current.desc
+  }
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      const chunks: BlobPart[] = []
+
+      recorder.ondataavailable = (e) => chunks.push(e.data)
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" })
+        const url = URL.createObjectURL(blob)
+        if (audioRef.current) {
+          audioRef.current.src = url
+          audioRef.current.play()
         }
-        return all
-    }, [result])
+        setMediaRecorder(null)
+      }
 
-    const current = slides[index]
-
-    const startRecording = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: true,
-            })
-            const recorder = new MediaRecorder(stream)
-            const chunks: BlobPart[] = []
-
-            recorder.ondataavailable = (e) => chunks.push(e.data)
-            recorder.onstop = () => {
-                const blob = new Blob(chunks, { type: "audio/webm" })
-                const url = URL.createObjectURL(blob)
-                if (audioRef.current) {
-                    audioRef.current.src = url
-                    audioRef.current.play()
-                }
-                setMediaRecorder(null)
-            }
-
-            recorder.start()
-            setMediaRecorder(recorder)
-            setIsRecording(true)
-        } catch {
-            alert("마이크 권한이 필요합니다.")
-        }
+      recorder.start()
+      setMediaRecorder(recorder)
+      setIsRecording(true)
+    } catch {
+      alert("🎤 마이크 권한이 필요합니다.")
     }
+  }
 
-    const stopRecording = () => {
-        mediaRecorder?.stop()
-        setIsRecording(false)
-    }
+  const stopRecording = () => {
+    mediaRecorder?.stop()
+    setIsRecording(false)
+  }
 
-    if (!current) return <div>결과 없음</div>
+  return (
+    <div className="flex flex-col items-center gap-4 p-6">
+      {/* 🔻 학생 선택 */}
+      <select
+        value={selectedStudent}
+        onChange={(e) => {
+          setSelectedStudent(e.target.value)
+          setIndex(0)
+        }}
+        className="mb-2 px-3 py-2 border rounded"
+      >
+        {Object.keys(studentResults).map((name) => (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        ))}
+      </select>
 
-    let sentence = "",
-        pinyin = "",
-        meaning = ""
-    if (current.windowType === "unknown") {
-        sentence = current.unknownSentence
-        pinyin = current.unknownPinyin
-        meaning = current.unknownDesc
-    } else {
-        const prefix =
-            current.windowType === "blind"
-                ? "朋友说"
-                : current.windowType === "hidden"
-                  ? "我觉得"
-                  : ""
-        const pinyinPrefix =
-            current.windowType === "blind"
-                ? "Péngyou shuō "
-                : current.windowType === "hidden"
-                  ? "Wǒ juéde "
-                  : ""
-        sentence = prefix + current.baseSentence
-        pinyin = pinyinPrefix + current.basePinyin
-        meaning = current.desc
-    }
-
-    const red = (t: string) =>
-        `<span style='color:red;font-weight:bold;'>${t}</span>`
-
-    return (
-        <div className="flex flex-col items-center gap-4 p-6">
-            {/* 🔻 드롭다운 */}
-            <select
-                value={selectedStudent}
-                onChange={(e) => {
-                    setSelectedStudent(e.target.value)
-                    setIndex(0)
-                }}
-                className="mb-2 px-3 py-2 border rounded"
+      {/* 🔷 진행 상태 바 */}
+      <div className="flex justify-center gap-2 mb-4">
+        {WINDOW_ORDER.map((type) => {
+          const isActive = current.windowType === type
+          const colorMap: Record<string, string> = {
+            open: "bg-green-400",
+            blind: "bg-blue-400",
+            hidden: "bg-yellow-400",
+            unknown: "bg-gray-400",
+          }
+          return (
+            <div
+              key={type}
+              className={`px-4 py-1 rounded-full text-sm font-medium shadow-md transition-all duration-200 ${
+                isActive
+                  ? `${colorMap[type]} text-white scale-105`
+                  : "bg-gray-100 text-gray-500"
+              }`}
             >
-                {Object.keys(studentResults).map((name) => (
-                    <option key={name} value={name}>
-                        {name}
-                    </option>
-                ))}
-            </select>
-
-            {/* 🔷 프로그레스 바 */}
-
-            <div className="flex justify-center gap-2 mb-4">
-                {WINDOW_ORDER.map((type) => {
-                    const isActive = current.windowType === type
-                    const colorMap: Record<string, string> = {
-                        open: "bg-green-400",
-                        blind: "bg-blue-400",
-                        hidden: "bg-yellow-400",
-                        unknown: "bg-gray-400",
-                    }
-
-                    return (
-                        <div
-                            key={type}
-                            className={`px-4 py-1 rounded-full text-sm font-medium shadow-md transition-all duration-200 ${
-                                isActive
-                                    ? `${colorMap[type]} text-white scale-105`
-                                    : "bg-gray-100 text-gray-500"
-                            }`}
-                        >
-                            {WINDOW_LABELS[type]}
-                        </div>
-                    )
-                })}
+              {WINDOW_LABELS[type]}
             </div>
+          )
+        })}
+      </div>
 
-            {/* 🖼 이미지 */}
-            <img
-                src={`/images/${current.hanzi}.png`}
-                alt={current.hanzi}
-                className="w-64 h-64 object-contain"
-            />
+      {/* 🖼 이미지 */}
+      <img
+        src={`https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/${current.hanzi}.png`}
+        alt={current.hanzi}
+        className="w-64 h-64 object-contain"
+      />
 
-            {/* 📜 문장 */}
-            <p
-                dangerouslySetInnerHTML={{ __html: red(sentence) }}
-                className="text-xl"
-            />
-            <p
-                dangerouslySetInnerHTML={{ __html: red(pinyin) }}
-                className="text-base text-gray-600"
-            />
-            <p
-                dangerouslySetInnerHTML={{ __html: red(meaning) }}
-                className="text-base text-gray-500"
-            />
+      {/* 📜 문장 */}
+      <p className="text-xl font-bold text-red-500">{sentence}</p>
+      <p className="text-base text-gray-600">{pinyin}</p>
+      <p className="text-base text-gray-500">{meaning}</p>
 
-            {/* 🔊 듣기 / 🎙 녹음 */}
-            <div className="flex gap-4 mt-4">
-                <button
-                    onClick={() => {
-                        const utter = new SpeechSynthesisUtterance(sentence)
-                        utter.lang = "zh-CN"
-                        speechSynthesis.speak(utter)
-                    }}
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                    🔊 듣기
-                </button>
+      {/* 🎧 듣기 / 🎤 녹음 */}
+      <div className="flex gap-4 mt-4">
+        <button
+          onClick={() => {
+            const utter = new SpeechSynthesisUtterance(sentence)
+            utter.lang = "zh-CN"
+            speechSynthesis.speak(utter)
+          }}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          🔊 듣기
+        </button>
 
-                <button
-                    onClick={() =>
-                        !mediaRecorder ? startRecording() : stopRecording()
-                    }
-                    className={`px-4 py-2 text-white rounded transition ${
-                        isRecording
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-blue-500 hover:bg-blue-600"
-                    }`}
-                >
-                    {isRecording ? "⏹ 녹음 중지" : "🎙 녹음 시작"}
-                </button>
-            </div>
+        <button
+          onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
+          className={`px-4 py-2 text-white rounded transition ${
+            isRecording
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-blue-500 hover:bg-blue-600"
+          }`}
+        >
+          {isRecording ? "⏹ 녹음 중지" : "🎙 녹음 시작"}
+        </button>
+      </div>
 
-            {/* 오디오 */}
-            <audio ref={audioRef} className="hidden" />
+      <audio ref={audioRef} className="hidden" />
 
-            {/* ◀️▶️ 슬라이드 이동 */}
-            <div className="flex gap-4 mt-6">
-                <button
-                    onClick={() => setIndex((i) => Math.max(0, i - 1))}
-                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                    ◀ 이전
-                </button>
-                <button
-                    onClick={() =>
-                        setIndex((i) => Math.min(slides.length - 1, i + 1))
-                    }
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                    다음 ▶
-                </button>
-            </div>
-        </div>
-    )
+      {/* ◀️▶️ 슬라이드 이동 */}
+      <div className="flex gap-4 mt-6">
+        <button
+          onClick={() => setIndex((i) => Math.max(0, i - 1))}
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        >
+          ◀ 이전
+        </button>
+        <button
+          onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          다음 ▶
+        </button>
+      </div>
+    </div>
+  )
 }
-
-export default SpeakingSliderApp
