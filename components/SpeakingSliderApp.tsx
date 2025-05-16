@@ -62,8 +62,8 @@ const SpeakingSliderApp = () => {
         ? `我觉得${current.baseSentence}`
         : current.windowType === "unknown"
         ? current.unknownSentence
-        : current.baseSentence
-    ),
+        : current.baseSentence + "。",
+    ) 
     py: (
       current.windowType === "blind"
         ? `Péngyou shuō ${current.basePinyin}`
