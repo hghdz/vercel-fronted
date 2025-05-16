@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useMemo } from 'react'
 import { strengths } from '../src/data/strengths'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const studentResults = {
   하현우: { open: ["创造力", "好奇心"], blind: ["判断力"], hidden: ["勇敢"], unknown: ["领导力"] },
@@ -17,6 +18,13 @@ const WINDOW_LABELS: Record<string, string> = {
   unknown: "미지의 창",
 }
 
+const WINDOW_COLORS: Record<string, string> = {
+  open: "bg-green-400",
+  blind: "bg-blue-400",
+  hidden: "bg-yellow-400",
+  unknown: "bg-purple-400",
+}
+
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
 
 const SpeakingSliderApp = () => {
@@ -25,6 +33,7 @@ const SpeakingSliderApp = () => {
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [direction, setDirection] = useState(0)
 
   const result = studentResults[selectedStudent]
 
@@ -41,7 +50,8 @@ const SpeakingSliderApp = () => {
   }, [result])
 
   const current = slides[index]
-  const red = (text: string) => `<span style="color:red;font-weight:bold;">${text}</span>`
+  const highlight = (text: string, keyword: string) =>
+    text.replace(new RegExp(keyword, 'g'), `<span style="color:red;font-weight:bold;">${keyword}</span>`)
 
   const sentence = {
     zh:
@@ -100,42 +110,55 @@ const SpeakingSliderApp = () => {
     setIsRecording(false)
   }
 
+  const progressPercentage = (index / slides.length) * 100
+  const currentColor = WINDOW_COLORS[current.windowType]
+
   return (
-    <div className="p-6 flex flex-col items-center gap-6 font-sans">
+    <div className="p-6 flex flex-col items-center gap-6 font-sans min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* 프로그레스 바 */}
-      <div className="flex gap-3">
-        {WINDOW_ORDER.map((type) => (
+      <div className="w-full max-w-xl">
+        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
           <div
-            key={type}
-            className={`rounded-full px-4 py-1 text-sm font-semibold shadow transition ${
-              current.windowType === type
-                ? 'bg-purple-500 text-white scale-105'
-                : 'bg-gray-200 text-gray-500'
-            }`}
-          >
-            {WINDOW_LABELS[type]}
-          </div>
-        ))}
+            className={`h-full ${currentColor} transition-all duration-500`}
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+        <div className="text-center mt-1 text-sm font-semibold text-gray-600">
+          {WINDOW_LABELS[current.windowType]} ({index + 1}/{slides.length})
+        </div>
       </div>
 
       {/* 슬라이더 */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 overflow-hidden w-80 h-72 justify-center">
         <button
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          className="text-2xl text-gray-500 hover:text-purple-500"
+          onClick={() => {
+            setDirection(-1)
+            setIndex((i) => Math.max(0, i - 1))
+          }}
+          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
         >
           ◀
         </button>
 
-        <img
-          src={`${IMAGE_BASE}/${current.hanzi}.png`}
-          alt={current.hanzi}
-          className="w-64 h-64 object-contain border-2 rounded-2xl shadow"
-        />
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.img
+            key={current.hanzi}
+            src={`${IMAGE_BASE}/${current.hanzi}.png`}
+            alt={current.hanzi}
+            className="w-64 h-64 object-contain border-4 border-purple-200 rounded-3xl shadow-xl absolute"
+            initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          />
+        </AnimatePresence>
 
         <button
-          onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
-          className="text-2xl text-gray-500 hover:text-purple-500"
+          onClick={() => {
+            setDirection(1)
+            setIndex((i) => Math.min(slides.length - 1, i + 1))
+          }}
+          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
         >
           ▶
         </button>
@@ -144,39 +167,39 @@ const SpeakingSliderApp = () => {
       {/* 문장 */}
       <div className="text-center leading-relaxed">
         <p
-          dangerouslySetInnerHTML={{ __html: red(sentence.zh) }}
-          className="text-xl font-medium"
+          dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }}
+          className="text-xl font-medium mb-1 text-black"
           style={{ fontFamily: 'Noto Sans SC, sans-serif' }}
         />
         <p
-          dangerouslySetInnerHTML={{ __html: red(sentence.py) }}
+          dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.hanzi) }}
           className="text-base text-gray-600"
         />
         <p
-          dangerouslySetInnerHTML={{ __html: red(sentence.kr) }}
+          dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }}
           className="text-base text-gray-500"
         />
       </div>
 
       {/* 버튼들 */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 mt-4">
         <button
           onClick={() => {
             const utter = new SpeechSynthesisUtterance(sentence.zh)
             utter.lang = 'zh-CN'
             speechSynthesis.speak(utter)
           }}
-          className="px-5 py-2 rounded-full bg-green-500 hover:bg-green-600 text-white shadow"
+          className="px-6 py-2 rounded-full bg-green-200 hover:bg-green-400 active:bg-green-500 active:scale-95 text-green-900 font-semibold shadow-md transition"
         >
           🔊 듣기
         </button>
 
         <button
           onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
-          className={`px-5 py-2 rounded-full shadow text-white transition ${
+          className={`px-6 py-2 rounded-full font-semibold shadow-md text-white transition active:scale-95 ${
             isRecording
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-blue-500 hover:bg-blue-600'
+              ? 'bg-red-500 hover:bg-red-600 active:bg-red-700'
+              : 'bg-blue-300 hover:bg-blue-500 active:bg-blue-600'
           }`}
         >
           {isRecording ? '⏹ 중지' : '🎙 녹음'}
@@ -186,13 +209,23 @@ const SpeakingSliderApp = () => {
           onClick={() => {
             if (audioRef.current) audioRef.current.play()
           }}
-          className="px-5 py-2 rounded-full bg-purple-500 hover:bg-purple-600 text-white shadow"
+          className="px-6 py-2 rounded-full bg-purple-200 hover:bg-purple-400 active:bg-purple-500 active:scale-95 text-purple-900 font-semibold shadow-md transition"
         >
           ▶ 재생
         </button>
       </div>
 
-      <audio ref={audioRef} className="hidden" />
+      <audio
+  ref={audioRef}
+  controls
+  className="mt-6 w-full max-w-md appearance-none rounded-lg overflow-hidden shadow-lg"
+  style={{
+    background: 'linear-gradient(to right, #f3f4f6, #e5e7eb)',
+    padding: '0.5rem 1rem',
+    borderRadius: '1rem',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  }}
+/>
     </div>
   )
 }
