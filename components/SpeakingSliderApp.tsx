@@ -53,7 +53,7 @@ const SpeakingSliderApp = () => {
   const highlight = (text: string, keyword: string) =>
     text.replace(new RegExp(keyword, 'g'), `<span style="color:red;font-weight:bold;">${keyword}</span>`)
 
-const sentence = {
+  const sentence = {
   zh: (
     current.windowType === "blind"
       ? `朋友说${current.baseSentence}`
@@ -81,8 +81,7 @@ const sentence = {
       ? current.unknownDesc
       : current.desc
   )
-}
-
+  }
 
   const startRecording = async () => {
     try {
