@@ -170,16 +170,6 @@ const SpeakingSliderApp = () => {
   </button>
 </div>
 
-        <button
-          onClick={() => {
-            setDirection(1)
-            setIndex((i) => Math.min(slides.length - 1, i + 1))
-          }}
-          className="absolute right-0 text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-        >
-          ▶
-        </button>
-      </div>
 
       {/* 문장 */}
       <div className="text-center leading-relaxed">
