@@ -113,126 +113,128 @@ const SpeakingSliderApp = () => {
   const progressPercentage = (index / slides.length) * 100
   const currentColor = WINDOW_COLORS[current.windowType]
 
-  return (
-    <div className="p-6 flex flex-col items-center gap-6 font-sans min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* 프로그레스 바 */}
-      <div className="w-full max-w-xl flex items-center gap-2">
-  {[...Array(slides.length)].map((_, i) => (
-    <div
-      key={i}
-      className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-        i <= index ? currentColor : 'bg-gray-200'
-      }`}
-    />
-  ))}
-</div>
-        <div className="text-center mt-1 text-sm font-semibold text-gray-600">
-          {WINDOW_LABELS[current.windowType]} ({index + 1}/{slides.length})
-        </div>
-      </div>
+ // ... (기존 import, studentResults 등은 동일)
 
-      {/* 슬라이더 */}
-      <div className="relative flex items-center justify-center w-80 h-72 overflow-hidden">
-        <button
-          onClick={() => {
-            setDirection(-1)
-            setIndex((i) => Math.max(0, i - 1))
-          }}
-          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-        >
-          ◀
-        </button>
+return (
+  <div className="p-6 flex flex-col items-center gap-6 font-sans min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    {/* 프로그레스 바 */}
+    <div className="w-full max-w-xl flex items-center gap-2">
+      {[...Array(slides.length)].map((_, i) => (
+        <div
+          key={i}
+          className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+            i <= index ? currentColor : 'bg-gray-200'
+          }`}
+        />
+      ))}
+    </div>
 
+    {/* 슬라이더 전체를 감싸는 영역 */}
+    <div className="relative w-80 h-72">
+      {/* 좌측 버튼 */}
+      <button
+        onClick={() => {
+          setDirection(-1)
+          setIndex((i) => Math.max(0, i - 1))
+        }}
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
+      >
+        ◀
+      </button>
+
+      {/* 슬라이드 영역 */}
+      <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
         <AnimatePresence initial={false} custom={direction}>
           <motion.img
             key={current.hanzi}
             src={`${IMAGE_BASE}/${current.hanzi}.png`}
             alt={current.hanzi}
-            className="w-64 h-64 object-contain border-4 border-purple-200 rounded-3xl shadow-xl relative"
+            className="absolute w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl"
             initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
             transition={{ duration: 0.4 }}
           />
         </AnimatePresence>
-
-        <button
-          onClick={() => {
-            setDirection(1)
-            setIndex((i) => Math.min(slides.length - 1, i + 1))
-          }}
-          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-        >
-          ▶
-        </button>
       </div>
 
-      {/* 문장 */}
-      <div className="text-center leading-relaxed">
-        <p
-          dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }}
-          className="text-xl font-medium mb-1 text-black"
-          style={{ fontFamily: 'Noto Sans SC, sans-serif' }}
-        />
-        <p
-          dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.hanzi) }}
-          className="text-base text-gray-600"
-        />
-        <p
-          dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }}
-          className="text-base text-gray-500"
-        />
-      </div>
-
-      {/* 버튼들 */}
-      <div className="flex gap-4 mt-4">
-        <button
-          onClick={() => {
-            const utter = new SpeechSynthesisUtterance(sentence.zh)
-            utter.lang = 'zh-CN'
-            speechSynthesis.speak(utter)
-          }}
-          className="px-6 py-2 rounded-full bg-green-200 hover:bg-green-400 active:bg-green-500 active:scale-95 text-green-900 font-semibold shadow-md transition"
-        >
-          🔊 듣기
-        </button>
-
-        <button
-          onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
-          className={`px-6 py-2 rounded-full font-semibold shadow-md text-white transition active:scale-95 ${
-            isRecording
-              ? 'bg-red-500 hover:bg-red-600 active:bg-red-700'
-              : 'bg-blue-300 hover:bg-blue-500 active:bg-blue-600'
-          }`}
-        >
-          {isRecording ? '⏹ 중지' : '🎙 녹음'}
-        </button>
-
-        <button
-          onClick={() => {
-            if (audioRef.current) audioRef.current.play()
-          }}
-          className="px-6 py-2 rounded-full bg-purple-200 hover:bg-purple-400 active:bg-purple-500 active:scale-95 text-purple-900 font-semibold shadow-md transition"
-        >
-          ▶ 재생
-        </button>
-      </div>
-
-      <div className="mt-4 w-full flex justify-center">
-  <audio
-    ref={audioRef}
-    controls
-    className="w-full max-w-xs appearance-none rounded-lg overflow-hidden shadow-md"
-    style={{
-      background: 'linear-gradient(to right, #f9fafb, #e5e7eb)',
-      padding: '0.25rem 0.5rem',
-      borderRadius: '1rem',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    }}
-  />
-</div>
+      {/* 우측 버튼 */}
+      <button
+        onClick={() => {
+          setDirection(1)
+          setIndex((i) => Math.min(slides.length - 1, i + 1))
+        }}
+        className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
+      >
+        ▶
+      </button>
     </div>
-  )
-}
+
+    {/* 문장 출력 */}
+    <div className="text-center leading-relaxed">
+      <p
+        dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }}
+        className="text-xl font-medium mb-1 text-black"
+        style={{ fontFamily: 'Noto Sans SC, sans-serif' }}
+      />
+      <p
+        dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.hanzi) }}
+        className="text-base text-gray-600"
+      />
+      <p
+        dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }}
+        className="text-base text-gray-500"
+      />
+    </div>
+
+    {/* 듣기/녹음/재생 버튼 */}
+    <div className="flex gap-4 mt-4">
+      <button
+        onClick={() => {
+          const utter = new SpeechSynthesisUtterance(sentence.zh)
+          utter.lang = 'zh-CN'
+          speechSynthesis.speak(utter)
+        }}
+        className="px-6 py-2 rounded-full bg-green-200 hover:bg-green-400 active:bg-green-500 active:scale-95 text-green-900 font-semibold shadow-md transition"
+      >
+        🔊 듣기
+      </button>
+
+      <button
+        onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
+        className={`px-6 py-2 rounded-full font-semibold shadow-md text-white transition active:scale-95 ${
+          isRecording
+            ? 'bg-red-500 hover:bg-red-600 active:bg-red-700'
+            : 'bg-blue-300 hover:bg-blue-500 active:bg-blue-600'
+        }`}
+      >
+        {isRecording ? '⏹ 중지' : '🎙 녹음'}
+      </button>
+
+      <button
+        onClick={() => {
+          if (audioRef.current) audioRef.current.play()
+        }}
+        className="px-6 py-2 rounded-full bg-purple-200 hover:bg-purple-400 active:bg-purple-500 active:scale-95 text-purple-900 font-semibold shadow-md transition"
+      >
+        ▶ 재생
+      </button>
+    </div>
+
+    {/* 오디오 재생바 */}
+    <div className="mt-4 flex justify-center w-full">
+      <audio
+        ref={audioRef}
+        controls
+        className="w-[240px] h-[36px] rounded-full shadow-md border border-gray-200"
+        style={{
+          background: 'linear-gradient(to right, #f9fafb, #e5e7eb)',
+          padding: '0.25rem 0.5rem'
+        }}
+      />
+    </div>
+  </div>
+)
+
 
 export default SpeakingSliderApp;
