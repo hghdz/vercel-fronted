@@ -129,7 +129,7 @@ const SpeakingSliderApp = () => {
       </div>
 
       {/* 슬라이더 */}
-      <div className="flex items-center gap-4 overflow-hidden w-80 h-72 justify-center">
+      <div className="relative flex items-center justify-center w-80 h-72 overflow-hidden">
         <button
           onClick={() => {
             setDirection(-1)
@@ -145,7 +145,7 @@ const SpeakingSliderApp = () => {
             key={current.hanzi}
             src={`${IMAGE_BASE}/${current.hanzi}.png`}
             alt={current.hanzi}
-            className="w-64 h-64 object-contain border-4 border-purple-200 rounded-3xl shadow-xl absolute"
+            className="w-64 h-64 object-contain border-4 border-purple-200 rounded-3xl shadow-xl relative"
             initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
@@ -215,18 +215,19 @@ const SpeakingSliderApp = () => {
         </button>
       </div>
 
-<div className="mt-4 flex justify-center w-full">
+      <div className="mt-4 w-full flex justify-center">
   <audio
     ref={audioRef}
     controls
-    className="w-[240px] h-[36px] rounded-full shadow-md border border-gray-200"
+    className="w-full max-w-xs appearance-none rounded-lg overflow-hidden shadow-md"
     style={{
       background: 'linear-gradient(to right, #f9fafb, #e5e7eb)',
-      padding: '0.25rem 0.5rem'
+      padding: '0.25rem 0.5rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     }}
   />
 </div>
-
     </div>
   )
 }
