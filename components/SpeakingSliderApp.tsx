@@ -1,5 +1,16 @@
 "use client"
-import * as React from "react"
+import React from "react"
+import dynamic from "next/dynamic"
+
+// 클라이언트에서만 로드되도록 설정
+const SpeakingSliderApp = dynamic(() => import("../components/SpeakingSliderApp"), {
+  ssr: false,
+})
+
+export default function SpeakingSliderPage() {
+  return <SpeakingSliderApp />
+}
+
 
 // 창 유형 분류
 const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"]
