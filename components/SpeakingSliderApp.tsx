@@ -215,19 +215,18 @@ const SpeakingSliderApp = () => {
         </button>
       </div>
 
-      <div className="mt-4 w-full flex justify-center">
+<div className="mt-4 flex justify-center w-full">
   <audio
     ref={audioRef}
     controls
-    className="w-full max-w-md appearance-none rounded-lg overflow-hidden shadow-lg"
+    className="w-[240px] h-[36px] rounded-full shadow-md border border-gray-200"
     style={{
       background: 'linear-gradient(to right, #f9fafb, #e5e7eb)',
-      padding: '0.5rem 1rem',
-      borderRadius: '1rem',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      padding: '0.25rem 0.5rem'
     }}
   />
 </div>
+
     </div>
   )
 }
