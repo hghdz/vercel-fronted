@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useMemo } from 'react'
 import { strengths } from '../src/data/strengths'
+import styles from './SpeakingSliderApp.module.css'
 
 const studentResults = {
   하현우: { open: ["创造力", "好奇心"], blind: ["判断力"], hidden: ["勇敢"], unknown: ["领导力"] },
@@ -17,14 +18,94 @@ const WINDOW_LABELS: Record<string, string> = {
   unknown: "미지의 창",
 }
 
-const WINDOW_COLORS: Record<string, string> = {
-  open: "bg-green-400",
-  blind: "bg-blue-400",
-  hidden: "bg-yellow-400",
-  unknown: "bg-purple-400",
+const IMAGE_BASE = 'https://cdn.jsdelivr.net/.wrapper {
+  padding: 24px;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #ebf8ff, #ffffff);
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
-const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
+.progressBar {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.progress {
+  height: 8px;
+  flex: 1;
+  border-radius: 9999px;
+  background: #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.progress.active {
+  background: #d8b4fe;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.imageBox {
+  width: 256px;
+  height: 256px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border: 4px solid #d8b4fe;
+}
+
+.img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.button {
+  padding: 8px 24px;
+  border-radius: 9999px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.listen { background: #bbf7d0; color: #166534; }
+.record { background: #bfdbfe; color: #1e3a8a; }
+.stop   { background: #f87171; color: #7f1d1d; }
+.play   { background: #e9d5ff; color: #6b21a8; }
+
+.audio {
+  width: 240px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(to right, #f9fafb, #e5e7eb);
+  padding: 4px 8px;
+}
+h/hghdz/card-selector-app/images'
 
 const SpeakingSliderApp = () => {
   const [selectedStudent, setSelectedStudent] = useState<keyof typeof studentResults>('하현우')
@@ -111,102 +192,52 @@ const SpeakingSliderApp = () => {
     setIsRecording(false)
   }
 
-  const progressPercentage = (index / slides.length) * 100
-  const currentColor = WINDOW_COLORS[current.windowType]
-
   return (
-    <div className="p-6 flex flex-col items-center gap-6 font-sans min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* 프로그레스 바 */}
-      <div className="w-full max-w-xl flex items-center gap-2">
+    <div className={styles.wrapper}>
+      <div className={styles.progressBar}>
         {[...Array(slides.length)].map((_, i) => (
-          <div
-            key={i}
-            className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-              i <= index ? currentColor : 'bg-gray-200'
-            }`}
-          />
+          <div key={i} className={`${styles.progress} ${i <= index ? styles.active : ''}`} />
         ))}
       </div>
 
-      {/* 슬라이더 */}
-      <div className="flex items-center justify-center gap-4">
-        <button
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-        >
-          ◀
-        </button>
+      <div className={styles.slider}>
+        <button onClick={() => setIndex((i) => Math.max(0, i - 1))}>◀</button>
 
-        <div className="w-64 h-64 flex items-center justify-center">
+        <div className={styles.imageBox}>
           {current && (
             <img
               key={current.hanzi}
               src={`${IMAGE_BASE}/${current.hanzi}.png`}
               alt={current.hanzi}
-              className="w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl"
+              className={styles.img}
             />
           )}
         </div>
 
-        <button
-          onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
-          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-        >
-          ▶
-        </button>
+        <button onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>▶</button>
       </div>
 
-      
-{/* ✅ Tailwind 작동 확인용 */}
-<div className="text-pink-500 text-3xl font-bold mt-4">
-  Tailwind 작동 확인
-</div>
+      <div>
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }} />
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.hanzi) }} />
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }} />
+      </div>
 
-      {/* 버튼들 */}
-      <div className="flex gap-4 mt-4">
-        <button
-          onClick={() => {
-            const utter = new SpeechSynthesisUtterance(sentence.zh)
-            utter.lang = 'zh-CN'
-            speechSynthesis.speak(utter)
-          }}
-          className="px-6 py-2 rounded-full bg-green-200 hover:bg-green-400 active:bg-green-500 active:scale-95 text-green-900 font-semibold shadow-md transition"
-        >
-          🔊 듣기
-        </button>
+      <div className={styles.buttonGroup}>
+        <button className={`${styles.button} ${styles.listen}`} onClick={() => {
+          const utter = new SpeechSynthesisUtterance(sentence.zh)
+          utter.lang = 'zh-CN'
+          speechSynthesis.speak(utter)
+        }}>🔊 듣기</button>
 
-        <button
-          onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
-          className={`px-6 py-2 rounded-full font-semibold shadow-md text-white transition active:scale-95 ${
-            isRecording
-              ? 'bg-red-500 hover:bg-red-600 active:bg-red-700'
-              : 'bg-blue-300 hover:bg-blue-500 active:bg-blue-600'
-          }`}
-        >
+        <button className={`${styles.button} ${isRecording ? styles.stop : styles.record}`} onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}>
           {isRecording ? '⏹ 중지' : '🎙 녹음'}
         </button>
 
-        <button
-          onClick={() => {
-            if (audioRef.current) audioRef.current.play()
-          }}
-          className="px-6 py-2 rounded-full bg-purple-200 hover:bg-purple-400 active:bg-purple-500 active:scale-95 text-purple-900 font-semibold shadow-md transition"
-        >
-          ▶ 재생
-        </button>
+        <button className={`${styles.button} ${styles.play}`} onClick={() => { if (audioRef.current) audioRef.current.play() }}>▶ 재생</button>
       </div>
 
-      <div className="mt-4 w-full flex justify-center">
-        <audio
-          ref={audioRef}
-          controls
-          className="w-[240px] h-[36px] rounded-full shadow-md border border-gray-200"
-          style={{
-            background: 'linear-gradient(to right, #f9fafb, #e5e7eb)',
-            padding: '0.25rem 0.5rem'
-          }}
-        />
-      </div>
+      <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
 }
