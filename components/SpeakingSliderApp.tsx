@@ -1,5 +1,5 @@
 import * as React from "react"
-import { addPropertyControls, ControlType } from "framer"
+
 
 // 창 유형 분류
 const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"]
@@ -478,5 +478,3 @@ function SpeakingSliderApp() {
 }
 
 export default SpeakingSliderApp
-
-addPropertyControls(SpeakingSliderApp, {})
