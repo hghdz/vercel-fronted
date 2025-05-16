@@ -18,6 +18,13 @@ const WINDOW_LABELS: Record<string, string> = {
   unknown: "미지의 창",
 }
 
+const WINDOW_EMOJIS: Record<string, string> = {
+  open: "🟢",
+  blind: "👁",
+  hidden: "🙈",
+  unknown: "❓",
+}
+
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
 
 const SpeakingSliderApp = () => {
@@ -42,6 +49,8 @@ const SpeakingSliderApp = () => {
   }, [result])
 
   const current = slides[index]
+  const currentWindowIndex = WINDOW_ORDER.indexOf(current.windowType)
+
   const highlight = (text: string, keyword: string) =>
     text.replace(new RegExp(keyword, 'g'), `<span style="color:red;font-weight:bold;">${keyword}</span>`)
 
@@ -105,26 +114,26 @@ const SpeakingSliderApp = () => {
     setIsRecording(false)
   }
 
-  const currentWindowIndex = WINDOW_ORDER.indexOf(current.windowType)
-
   return (
     <div className={styles.wrapper}>
-      {/* 🔹 현재 창 표시 */}
-      <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-        현재: {WINDOW_LABELS[current.windowType]}
-      </p>
+      {/* 🔹 창 이름 (중앙 + 이모지) */}
+      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+        {WINDOW_EMOJIS[current.windowType]} {WINDOW_LABELS[current.windowType]}
+      </div>
 
       {/* 🔹 프로그레스 바 (4구간 고정) */}
-      <div className={styles.progressBarTrack}>
-        {WINDOW_ORDER.map((type, i) => (
-          <div
-            key={type}
-            className={styles.progressSegment}
-            style={{
-              backgroundColor: i === currentWindowIndex ? '#6366f1' : '#e5e7eb'
-            }}
-          />
-        ))}
+      <div className={styles.progressBarWrapper}>
+        <div className={styles.progressBarTrack}>
+          {WINDOW_ORDER.map((type, i) => (
+            <div
+              key={type}
+              className={styles.progressSegment}
+              style={{
+                backgroundColor: i === currentWindowIndex ? '#6366f1' : '#e5e7eb'
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* 🔹 슬라이드 */}
@@ -145,8 +154,8 @@ const SpeakingSliderApp = () => {
         <button className={styles.navButton} onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>▶</button>
       </div>
 
-      {/* 🔹 문장 */}
-      <div>
+      {/* 🔹 문장 박스 */}
+      <div className={styles.sentenceBox}>
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.pinyin) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }} />
