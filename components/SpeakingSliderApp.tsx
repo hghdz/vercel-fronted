@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useState, useMemo } from 'react'
-import { strengths } from '../data/strengths'
+import { strengths } from '../src/data/strengths'
 
 const studentResults = {
   하현우: { open: ["创造力", "好奇心"], blind: ["判断力"], hidden: ["勇敢"], unknown: ["领导力"] },
