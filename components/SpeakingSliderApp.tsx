@@ -314,18 +314,22 @@ export default function SpeakingSliderApp() {
   if (!current) return <div className="text-center p-4">결과 없음</div>
 
   const { hanzi, baseSentence, basePinyin, desc, unknownSentence, unknownPinyin, unknownDesc, windowType } = current
-
   const isUnknown = windowType === "unknown"
-
   const sentence = isUnknown ? unknownSentence : baseSentence
   const pinyin = isUnknown ? unknownPinyin : basePinyin
   const meaning = isUnknown ? unknownDesc : desc
-
   const highlight = (text: string, word: string) => text.replaceAll(word, `<span class='text-red-600 font-bold'>${word}</span>`)
 
+  const progress = Math.round(((index + 1) / slides.length) * 100)
+
   return (
-    <div className="max-w-xl mx-auto p-4 flex flex-col items-center">
+    <div className="max-w-xl mx-auto p-6 flex flex-col items-center">
       {/* 프로그레스 바 */}
+      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
+        <div className="h-full bg-purple-500 transition-all duration-500" style={{ width: `${progress}%` }} />
+      </div>
+
+      {/* 창 유형 표시 */}
       <div className="flex justify-center gap-2 mb-4">
         {WINDOW_ORDER.map((type) => (
           <div
@@ -341,43 +345,45 @@ export default function SpeakingSliderApp() {
         ))}
       </div>
 
-      {/* 슬라이더 */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => setIndex((i) => Math.max(0, i - 1))} className="text-2xl">◀</button>
+      {/* 슬라이드 */}
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={() => setIndex((i) => Math.max(0, i - 1))} className="text-3xl text-purple-400 hover:text-purple-600">◀</button>
         <img
           src={`https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images/${hanzi}.png`}
           alt={hanzi}
-          className="w-64 h-64 object-contain"
+          className="w-64 h-64 object-contain rounded-2xl shadow"
         />
-        <button onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))} className="text-2xl">▶</button>
+        <button onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))} className="text-3xl text-purple-400 hover:text-purple-600">▶</button>
       </div>
 
       {/* 문장 */}
-      <div className="text-center mt-4 space-y-2">
+      <div className="text-center space-y-2">
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence, hanzi) }} className="text-xl font-medium" />
         <p dangerouslySetInnerHTML={{ __html: highlight(pinyin, current.pinyin) }} className="text-base text-gray-600 font-notosc" />
         <p dangerouslySetInnerHTML={{ __html: highlight(meaning, desc) }} className="text-base text-gray-500" />
       </div>
 
       {/* 버튼 */}
-      <div className="flex gap-3 mt-4">
+      <div className="flex gap-3 mt-6">
         <button
           onClick={() => {
             const utter = new SpeechSynthesisUtterance(sentence)
             utter.lang = "zh-CN"
             speechSynthesis.speak(utter)
           }}
-          className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600 active:translate-y-[2px]"
+          className="bg-green-400 hover:bg-green-500 active:bg-green-600 text-white font-semibold px-5 py-2 rounded-full shadow transition-all"
         >🔊 듣기</button>
+
         <button
-          onClick={() => !mediaRecorder ? startRecording() : stopRecording()}
-          className={`text-white px-4 py-2 rounded shadow active:translate-y-[2px] ${
-            isRecording ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"
+          onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
+          className={`font-semibold px-5 py-2 rounded-full shadow transition-all text-white ${
+            isRecording ? "bg-red-400 hover:bg-red-500 active:bg-red-600" : "bg-blue-400 hover:bg-blue-500 active:bg-blue-600"
           }`}
         >{isRecording ? "⏹ 중지" : "🎙 녹음"}</button>
+
         <button
           onClick={() => audioRef.current?.play()}
-          className="bg-gray-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 active:translate-y-[2px]"
+          className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-white font-semibold px-5 py-2 rounded-full shadow transition-all"
         >▶ 재생</button>
       </div>
 
