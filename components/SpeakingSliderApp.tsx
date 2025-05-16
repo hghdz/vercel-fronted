@@ -2,7 +2,6 @@
 
 import React, { useRef, useState, useMemo } from 'react'
 import { strengths } from '../src/data/strengths'
-import { motion, AnimatePresence } from 'framer-motion'
 
 const studentResults = {
   하현우: { open: ["创造力", "好奇心"], blind: ["判断力"], hidden: ["勇敢"], unknown: ["领导力"] },
@@ -33,7 +32,6 @@ const SpeakingSliderApp = () => {
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [direction, setDirection] = useState(0)
 
   const result = studentResults[selectedStudent]
 
@@ -54,33 +52,33 @@ const SpeakingSliderApp = () => {
     text.replace(new RegExp(keyword, 'g'), `<span style="color:red;font-weight:bold;">${keyword}</span>`)
 
   const sentence = {
-  zh: (
-    current.windowType === "blind"
-      ? `朋友说${current.baseSentence}`
-      : current.windowType === "hidden"
-      ? `我觉得${current.baseSentence}`
-      : current.windowType === "unknown"
-      ? current.unknownSentence
-      : current.baseSentence
-  ),
-  py: (
-    current.windowType === "blind"
-      ? `Péngyou shuō ${current.basePinyin}`
-      : current.windowType === "hidden"
-      ? `Wǒ juéde ${current.basePinyin}`
-      : current.windowType === "unknown"
-      ? current.unknownPinyin
-      : current.basePinyin
-  ),
-  kr: (
-    current.windowType === "blind"
-      ? `친구가 말하길 ${current.desc}`
-      : current.windowType === "hidden"
-      ? `내가 생각하기에 ${current.desc}`
-      : current.windowType === "unknown"
-      ? current.unknownDesc
-      : current.desc
-  )
+    zh: (
+      current.windowType === "blind"
+        ? `朋友说${current.baseSentence}`
+        : current.windowType === "hidden"
+        ? `我觉得${current.baseSentence}`
+        : current.windowType === "unknown"
+        ? current.unknownSentence
+        : current.baseSentence
+    ),
+    py: (
+      current.windowType === "blind"
+        ? `Péngyou shuō ${current.basePinyin}`
+        : current.windowType === "hidden"
+        ? `Wǒ juéde ${current.basePinyin}`
+        : current.windowType === "unknown"
+        ? current.unknownPinyin
+        : current.basePinyin
+    ),
+    kr: (
+      current.windowType === "blind"
+        ? `친구가 말하길 ${current.desc}`
+        : current.windowType === "hidden"
+        ? `내가 생각하기에 ${current.desc}`
+        : current.windowType === "unknown"
+        ? current.unknownDesc
+        : current.desc
+    )
   }
 
   const startRecording = async () => {
@@ -132,44 +130,31 @@ const SpeakingSliderApp = () => {
 
       {/* 슬라이더 */}
       <div className="flex items-center justify-center gap-4">
-  <button
-    onClick={() => {
-      setDirection(-1)
-      setIndex((i) => Math.max(0, i - 1))
-    }}
-    className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-  >
-    ◀
-  </button>
+        <button
+          onClick={() => setIndex((i) => Math.max(0, i - 1))}
+          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
+        >
+          ◀
+        </button>
 
-  <div className="w-64 h-64 flex items-center justify-center">
-    {current && (
-      <AnimatePresence initial={false} custom={direction}>
-        <motion.img
-          key={current.hanzi}
-          src={`${IMAGE_BASE}/${current.hanzi}.png`}
-          alt={current.hanzi}
-          className="w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl"
-          initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
-          transition={{ duration: 0.4 }}
-        />
-      </AnimatePresence>
-    )}
-  </div>
+        <div className="w-64 h-64 flex items-center justify-center">
+          {current && (
+            <img
+              key={current.hanzi}
+              src={`${IMAGE_BASE}/${current.hanzi}.png`}
+              alt={current.hanzi}
+              className="w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl"
+            />
+          )}
+        </div>
 
-  <button
-    onClick={() => {
-      setDirection(1)
-      setIndex((i) => Math.min(slides.length - 1, i + 1))
-    }}
-    className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
-  >
-    ▶
-  </button>
-</div>
-
+        <button
+          onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
+          className="text-3xl p-2 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition shadow-md"
+        >
+          ▶
+        </button>
+      </div>
 
       {/* 문장 */}
       <div className="text-center leading-relaxed">
