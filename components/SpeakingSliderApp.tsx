@@ -215,17 +215,19 @@ const SpeakingSliderApp = () => {
         </button>
       </div>
 
-      <audio
-  ref={audioRef}
-  controls
-  className="mt-6 w-full max-w-md appearance-none rounded-lg overflow-hidden shadow-lg"
-  style={{
-    background: 'linear-gradient(to right, #f3f4f6, #e5e7eb)',
-    padding: '0.5rem 1rem',
-    borderRadius: '1rem',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  }}
-/>
+      <div className="mt-4 w-full flex justify-center">
+  <audio
+    ref={audioRef}
+    controls
+    className="w-full max-w-md appearance-none rounded-lg overflow-hidden shadow-lg"
+    style={{
+      background: 'linear-gradient(to right, #f9fafb, #e5e7eb)',
+      padding: '0.5rem 1rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    }}
+  />
+</div>
     </div>
   )
 }
