@@ -116,13 +116,16 @@ const SpeakingSliderApp = () => {
   return (
     <div className="p-6 flex flex-col items-center gap-6 font-sans min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* 프로그레스 바 */}
-      <div className="w-full max-w-xl">
-        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className={`h-full ${currentColor} transition-all duration-500`}
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
+      <div className="w-full max-w-xl flex items-center gap-2">
+  {[...Array(slides.length)].map((_, i) => (
+    <div
+      key={i}
+      className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+        i <= index ? currentColor : 'bg-gray-200'
+      }`}
+    />
+  ))}
+</div>
         <div className="text-center mt-1 text-sm font-semibold text-gray-600">
           {WINDOW_LABELS[current.windowType]} ({index + 1}/{slides.length})
         </div>
