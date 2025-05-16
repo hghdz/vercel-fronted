@@ -156,22 +156,11 @@ const SpeakingSliderApp = () => {
         </button>
       </div>
 
-      {/* 문장 */}
-      <div className="text-center leading-relaxed">
-        <p
-          dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }}
-          className="text-xl font-medium mb-1 text-black"
-          style={{ fontFamily: 'Noto Sans SC, sans-serif' }}
-        />
-        <p
-          dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.hanzi) }}
-          className="text-base text-gray-600"
-        />
-        <p
-          dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }}
-          className="text-base text-gray-500"
-        />
-      </div>
+      
+{/* ✅ Tailwind 작동 확인용 */}
+<div className="text-pink-500 text-3xl font-bold mt-4">
+  Tailwind 작동 확인
+</div>
 
       {/* 버튼들 */}
       <div className="flex gap-4 mt-4">
