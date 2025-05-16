@@ -1,6 +1,36 @@
-import React, { useState, useRef } from "react"
+import * as React from "react"
+import { addPropertyControls, ControlType } from "framer"
 
-// 강점 데이터
+// 창 유형 분류
+const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"]
+const WINDOW_LABELS: Record<string, string> = {
+    open: "열린 창",
+    blind: "보이지 않는 창",
+    hidden: "숨긴 창",
+    unknown: "미지의 창",
+}
+const studentResults = {
+    하현우: {
+        open: ["创造力", "好奇心"],
+        blind: ["判断力"],
+        hidden: ["勇敢"],
+        unknown: ["领导力"],
+    },
+    김민지: {
+        open: ["热情", "善良"],
+        blind: ["洞察力"],
+        hidden: ["坚持"],
+        unknown: ["信仰"],
+    },
+    박소연: {
+        open: ["诚实", "爱心"],
+        blind: ["懂别人"],
+        hidden: ["谨慎"],
+        unknown: ["希望"],
+    },
+}
+
+// 👉 완성된 강점 데이터
 const strengths = [
     {
         hanzi: "创造力",
@@ -244,136 +274,209 @@ const strengths = [
     },
 ]
 
-const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"]
-const WINDOW_LABELS: Record<string, string> = {
-  open: "열린 창",
-  blind: "보이지 않는 창",
-  hidden: "숨겨진 창",
-  unknown: "미지의 창"
-}
+function SpeakingSliderApp() {
+    const [selectedStudent, setSelectedStudent] = React.useState("하현우")
+    const [index, setIndex] = React.useState(0)
+    const [isRecording, setIsRecording] = React.useState(false)
+    const [mediaRecorder, setMediaRecorder] =
+        React.useState<MediaRecorder | null>(null)
+    const audioRef = React.useRef<HTMLAudioElement | null>(null)
 
-const SpeakingSliderApp = () => {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [windowType, setWindowType] = useState("open")
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const [recordingUrl, setRecordingUrl] = useState("")
+    const result = studentResults[selectedStudent]
 
-  const current = strengths[currentIndex]
+    const slides = React.useMemo(() => {
+        const all: any[] = []
+        for (const type of WINDOW_ORDER) {
+            const hanziList = result[type] || []
+            hanziList.forEach((hanzi: string) => {
+                const data = strengths.find((s) => s.hanzi === hanzi)
+                if (data) all.push({ ...data, windowType: type })
+            })
+        }
+        return all
+    }, [result])
 
-  const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = "zh-CN"
-    speechSynthesis.speak(utterance)
-  }
+    const current = slides[index]
 
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    const mediaRecorder = new MediaRecorder(stream)
-    mediaRecorderRef.current = mediaRecorder
-    const chunks: Blob[] = []
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+            })
+            const recorder = new MediaRecorder(stream)
+            const chunks: BlobPart[] = []
 
-    mediaRecorder.ondataavailable = (e) => chunks.push(e.data)
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "audio/webm" })
-      const url = URL.createObjectURL(blob)
-      setRecordingUrl(url)
+            recorder.ondataavailable = (e) => chunks.push(e.data)
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "audio/webm" })
+                const url = URL.createObjectURL(blob)
+                if (audioRef.current) {
+                    audioRef.current.src = url
+                    audioRef.current.play()
+                }
+                setMediaRecorder(null)
+            }
+
+            recorder.start()
+            setMediaRecorder(recorder)
+            setIsRecording(true)
+        } catch {
+            alert("마이크 권한이 필요합니다.")
+        }
     }
 
-    mediaRecorder.start()
-  }
+    const stopRecording = () => {
+        mediaRecorder?.stop()
+        setIsRecording(false)
+    }
 
-  const stopRecording = () => {
-    mediaRecorderRef.current?.stop()
-  }
+    if (!current) return <div>결과 없음</div>
 
-  const getSentence = () => {
-    if (windowType === "unknown") return current.unknownSentence
-    if (windowType === "blind") return "朋友说" + current.baseSentence
-    if (windowType === "hidden") return "我觉得" + current.baseSentence
-    return current.baseSentence
-  }
+    let sentence = "",
+        pinyin = "",
+        meaning = ""
+    if (current.windowType === "unknown") {
+        sentence = current.unknownSentence
+        pinyin = current.unknownPinyin
+        meaning = current.unknownDesc
+    } else {
+        const prefix =
+            current.windowType === "blind"
+                ? "朋友说"
+                : current.windowType === "hidden"
+                  ? "我觉得"
+                  : ""
+        const pinyinPrefix =
+            current.windowType === "blind"
+                ? "Péngyou shuō "
+                : current.windowType === "hidden"
+                  ? "Wǒ juéde "
+                  : ""
+        sentence = prefix + current.baseSentence
+        pinyin = pinyinPrefix + current.basePinyin
+        meaning = current.desc
+    }
 
-  const getPinyin = () => {
-    if (windowType === "unknown") return current.unknownPinyin
-    if (windowType === "blind") return "Péngyou shuō " + current.basePinyin
-    if (windowType === "hidden") return "Wǒ juéde " + current.basePinyin
-    return current.basePinyin
-  }
+    const red = (t: string) =>
+        `<span style='color:red;font-weight:bold;'>${t}</span>`
 
-  const getMeaning = () => {
-    if (windowType === "unknown") return current.unknownDesc
-    return current.desc
-  }
+    return (
+        <div className="flex flex-col items-center gap-4 p-6">
+            {/* 🔻 드롭다운 */}
+            <select
+                value={selectedStudent}
+                onChange={(e) => {
+                    setSelectedStudent(e.target.value)
+                    setIndex(0)
+                }}
+                className="mb-2 px-3 py-2 border rounded"
+            >
+                {Object.keys(studentResults).map((name) => (
+                    <option key={name} value={name}>
+                        {name}
+                    </option>
+                ))}
+            </select>
 
-  return (
-    <div className="flex flex-col items-center gap-4 p-6 max-w-xl mx-auto">
-      {/* 프로그레스 바 */}
-      <div className="flex justify-center gap-2 mb-4">
-        {WINDOW_ORDER.map((type) => (
-          <div
-            key={type}
-            onClick={() => setWindowType(type)}
-            className={`cursor-pointer px-4 py-1 rounded-full text-sm font-semibold shadow transition-all
-              ${windowType === type ? "bg-blue-500 text-white scale-105" : "bg-gray-100 text-gray-500"}`}
-          >
-            {WINDOW_LABELS[type]}
-          </div>
-        ))}
-      </div>
+            {/* 🔷 프로그레스 바 */}
 
-      {/* 이미지 */}
-      <img
-        src={`https://cdn.jsdelivr.net/gh/hghdz/card@main/strengths/${current.hanzi}.png`}
-        alt={current.hanzi}
-        className="w-60 h-60 object-contain"
-      />
+            <div className="flex justify-center gap-2 mb-4">
+                {WINDOW_ORDER.map((type) => {
+                    const isActive = current.windowType === type
+                    const colorMap: Record<string, string> = {
+                        open: "bg-green-400",
+                        blind: "bg-blue-400",
+                        hidden: "bg-yellow-400",
+                        unknown: "bg-gray-400",
+                    }
 
-      {/* 문장 */}
-      <p className="text-xl font-bold text-red-600">{getSentence()}</p>
-      <p className="text-base text-red-500">{getPinyin()}</p>
-      <p className="text-base text-red-400">{getMeaning()}</p>
+                    return (
+                        <div
+                            key={type}
+                            className={`px-4 py-1 rounded-full text-sm font-medium shadow-md transition-all duration-200 ${
+                                isActive
+                                    ? `${colorMap[type]} text-white scale-105`
+                                    : "bg-gray-100 text-gray-500"
+                            }`}
+                        >
+                            {WINDOW_LABELS[type]}
+                        </div>
+                    )
+                })}
+            </div>
 
-      {/* 버튼 */}
-      <div className="flex gap-4 mt-4">
-        <button
-          onClick={() => speak(getSentence())}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        >
-          🔊 듣기
-        </button>
-        <button
-          onClick={() =>
-            mediaRecorderRef.current ? stopRecording() : startRecording()
-          }
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          {mediaRecorderRef.current ? "⏹ 녹음 중지" : "🎙 녹음 시작"}
-        </button>
-      </div>
+            {/* 🖼 이미지 */}
+            <img
+                src={`/images/${current.hanzi}.png`}
+                alt={current.hanzi}
+                className="w-64 h-64 object-contain"
+            />
 
-      {/* 재생 */}
-      {recordingUrl && (
-        <audio ref={audioRef} controls src={recordingUrl} className="mt-2" />
-      )}
+            {/* 📜 문장 */}
+            <p
+                dangerouslySetInnerHTML={{ __html: red(sentence) }}
+                className="text-xl"
+            />
+            <p
+                dangerouslySetInnerHTML={{ __html: red(pinyin) }}
+                className="text-base text-gray-600"
+            />
+            <p
+                dangerouslySetInnerHTML={{ __html: red(meaning) }}
+                className="text-base text-gray-500"
+            />
 
-      {/* 이전/다음 */}
-      <div className="flex gap-4 mt-6">
-        <button
-          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-          className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-        >
-          ◀ 이전
-        </button>
-        <button
-          onClick={() => setCurrentIndex((i) => Math.min(strengths.length - 1, i + 1))}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          다음 ▶
-        </button>
-      </div>
-    </div>
-  )
+            {/* 🔊 듣기 / 🎙 녹음 */}
+            <div className="flex gap-4 mt-4">
+                <button
+                    onClick={() => {
+                        const utter = new SpeechSynthesisUtterance(sentence)
+                        utter.lang = "zh-CN"
+                        speechSynthesis.speak(utter)
+                    }}
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                    🔊 듣기
+                </button>
+
+                <button
+                    onClick={() =>
+                        !mediaRecorder ? startRecording() : stopRecording()
+                    }
+                    className={`px-4 py-2 text-white rounded transition ${
+                        isRecording
+                            ? "bg-red-600 hover:bg-red-700"
+                            : "bg-blue-500 hover:bg-blue-600"
+                    }`}
+                >
+                    {isRecording ? "⏹ 녹음 중지" : "🎙 녹음 시작"}
+                </button>
+            </div>
+
+            {/* 오디오 */}
+            <audio ref={audioRef} className="hidden" />
+
+            {/* ◀️▶️ 슬라이드 이동 */}
+            <div className="flex gap-4 mt-6">
+                <button
+                    onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                >
+                    ◀ 이전
+                </button>
+                <button
+                    onClick={() =>
+                        setIndex((i) => Math.min(slides.length - 1, i + 1))
+                    }
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    다음 ▶
+                </button>
+            </div>
+        </div>
+    )
 }
 
 export default SpeakingSliderApp
+
+addPropertyControls(SpeakingSliderApp, {})
