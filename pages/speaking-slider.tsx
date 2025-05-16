@@ -1,7 +1,12 @@
 // pages/speaking-slider.tsx
 
-import SpeakingSliderApp from "@/components/SpeakingSliderApp"
+import dynamic from "next/dynamic"
+const SpeakingSliderApp = dynamic(() => import("../components/SpeakingSliderApp"), { ssr: false })
 
 export default function SpeakingPage() {
-  return <SpeakingSliderApp />
+  return (
+    <div className="min-h-screen bg-white p-4">
+      <SpeakingSliderApp />
+    </div>
+  )
 }
