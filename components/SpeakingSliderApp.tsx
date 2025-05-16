@@ -145,7 +145,11 @@ const SpeakingSliderApp = () => {
         <div className="w-64 h-64 flex items-center justify-center">
           {current && (
   <AnimatePresence initial={false} custom={direction}>
-    <motion.img$1className="w-full h-full object-contain$2"
+    motion.img
+      key={current.hanzi}
+      src={`${IMAGE_BASE}/${current.hanzi}.png`}
+      alt={current.hanzi}
+      className="w-full h-full object-contain border-4 border-purple-200 rounded-3xl shadow-xl""
       initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: direction > 0 ? -300 : 300, opacity: 0 }}
