@@ -9,6 +9,8 @@ const WINDOW_LABELS: Record<string, string> = {
     hidden: "숨긴 창",
     unknown: "미지의 창",
 }
+
+const result = studentResults[selectedStudent as keyof typeof studentResults]
 const studentResults = {
     하현우: {
         open: ["创造力", "好奇心"],
