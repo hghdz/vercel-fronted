@@ -105,13 +105,16 @@ const SpeakingSliderApp = () => {
     setIsRecording(false)
   }
 
+  const progressPercentage = (() => {
+    const total = slides.length
+    const completed = index + 1
+    return (completed / total) * 100
+  })()
+
   return (
     <div className={styles.wrapper}>
-      <div className={styles.progressBarCustom}>
-        {WINDOW_ORDER.map((type, i) => {
-          const active = result[type].some(h => h === current.hanzi)
-          return <div key={type} className={`${styles.progressStep} ${active ? styles[`${type}Active`] : ''}`}>{WINDOW_LABELS[type]}</div>
-        })}
+      <div className={styles.progressBarTrack}>
+        <div className={styles.progressBarFill} style={{ width: `${progressPercentage}%` }} />
       </div>
 
       <div className={styles.slider}>
@@ -133,7 +136,7 @@ const SpeakingSliderApp = () => {
 
       <div>
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }} />
-        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.hanzi) }} />
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.pinyin) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }} />
       </div>
 
