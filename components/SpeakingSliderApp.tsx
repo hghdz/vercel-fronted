@@ -107,14 +107,15 @@ const SpeakingSliderApp = () => {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.progressBar}>
-        {[...Array(slides.length)].map((_, i) => (
-          <div key={i} className={`${styles.progress} ${i <= index ? styles.active : ''}`} />
-        ))}
+      <div className={styles.progressBarCustom}>
+        {WINDOW_ORDER.map((type, i) => {
+          const active = result[type].some(h => h === current.hanzi)
+          return <div key={type} className={`${styles.progressStep} ${active ? styles[`${type}Active`] : ''}`}>{WINDOW_LABELS[type]}</div>
+        })}
       </div>
 
       <div className={styles.slider}>
-        <button onClick={() => setIndex((i) => Math.max(0, i - 1))}>◀</button>
+        <button className={styles.navButton} onClick={() => setIndex((i) => Math.max(0, i - 1))}>◀</button>
 
         <div className={styles.imageBox}>
           {current && (
@@ -127,7 +128,7 @@ const SpeakingSliderApp = () => {
           )}
         </div>
 
-        <button onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>▶</button>
+        <button className={styles.navButton} onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>▶</button>
       </div>
 
       <div>
