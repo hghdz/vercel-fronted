@@ -105,18 +105,29 @@ const SpeakingSliderApp = () => {
     setIsRecording(false)
   }
 
-  const progressPercentage = (() => {
-    const total = slides.length
-    const completed = index + 1
-    return (completed / total) * 100
-  })()
+  const currentWindowIndex = WINDOW_ORDER.indexOf(current.windowType)
 
   return (
     <div className={styles.wrapper}>
+      {/* 🔹 현재 창 표시 */}
+      <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+        현재: {WINDOW_LABELS[current.windowType]}
+      </p>
+
+      {/* 🔹 프로그레스 바 (4구간 고정) */}
       <div className={styles.progressBarTrack}>
-        <div className={styles.progressBarFill} style={{ width: `${progressPercentage}%` }} />
+        {WINDOW_ORDER.map((type, i) => (
+          <div
+            key={type}
+            className={styles.progressSegment}
+            style={{
+              backgroundColor: i === currentWindowIndex ? '#6366f1' : '#e5e7eb'
+            }}
+          />
+        ))}
       </div>
 
+      {/* 🔹 슬라이드 */}
       <div className={styles.slider}>
         <button className={styles.navButton} onClick={() => setIndex((i) => Math.max(0, i - 1))}>◀</button>
 
@@ -134,12 +145,14 @@ const SpeakingSliderApp = () => {
         <button className={styles.navButton} onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>▶</button>
       </div>
 
+      {/* 🔹 문장 */}
       <div>
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.pinyin) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }} />
       </div>
 
+      {/* 🔹 버튼 */}
       <div className={styles.buttonGroup}>
         <button className={`${styles.button} ${styles.listen}`} onClick={() => {
           const utter = new SpeechSynthesisUtterance(sentence.zh)
@@ -159,4 +172,4 @@ const SpeakingSliderApp = () => {
   )
 }
 
-export default SpeakingSliderApp;
+export default SpeakingSliderApp
