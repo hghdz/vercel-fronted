@@ -10,7 +10,7 @@ const WINDOW_LABELS: Record<string, string> = {
     unknown: "미지의 창",
 }
 
-
+const [selectedStudent, setSelectedStudent] = React.useState("하현우")
 const studentResults = {
     하현우: {
         open: ["创造力", "好奇心"],
