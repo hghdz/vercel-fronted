@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useEffect, useState, useRef, useMemo } from "react"
+import Link from "next/link"
 import { initializeApp } from "firebase/app"
 import {
   getAuth,
@@ -42,7 +43,7 @@ interface ResultType {
 }
 
 export default function SpeakingSliderApp() {
-  // ──────── 모든 훅은 여기, 최상단 ────────
+  // 훅 모음
   const [user, setUser] = useState<User | null>(null)
   const [result, setResult] = useState<ResultType | null>(null)
   const [index, setIndex] = useState(0)
@@ -60,12 +61,16 @@ export default function SpeakingSliderApp() {
     const email = user?.email ?? ""
     if (!email) return
     ;(async () => {
-      const res = await fetch(
-        `/api/get-strengths?email=${encodeURIComponent(email)}`
-      )
-      const data = await res.json()
-      if (data.open) setResult(data)
-      else alert("해당 이메일 결과가 없습니다.")
+      try {
+        const res = await fetch(
+          `/api/get-strengths?email=${encodeURIComponent(email)}`
+        )
+        const data = await res.json()
+        if (data.open) setResult(data)
+        else alert("해당 이메일의 결과가 없습니다.")
+      } catch {
+        alert("데이터를 불러오는 중 오류가 발생했습니다.")
+      }
     })()
   }, [user])
 
@@ -87,7 +92,6 @@ export default function SpeakingSliderApp() {
     }
   }, [slides, index])
 
-  // 📌 sentence 훅도 최상단 훅 그룹에 포함
   const current = slides[index]!
   const sentence = useMemo(() => {
     if (!current) return { zh: "", py: "", kr: "" }
@@ -119,38 +123,6 @@ export default function SpeakingSliderApp() {
     }
   }, [current])
 
-  // ───── 조건부 렌더링 ─────
-  if (!user) {
-    return (
-      <div className={styles.wrapper}>
-        <h2>🔒 로그인이 필요합니다</h2>
-        <button
-          className={styles.loginButton}
-          onClick={() => signInWithPopup(auth, provider)}
-        >
-          Google 계정으로 로그인
-        </button>
-      </div>
-    )
-  }
-
-  if (!result) {
-    return <div className={styles.wrapper}>로딩 중…</div>
-  }
-
-  if (slides.length === 0) {
-    return <div className={styles.wrapper}>슬라이드가 없습니다.</div>
-  }
-
-  // ───── 최종 렌더링 ─────
-  const currentIdx = WINDOW_ORDER.indexOf(current.windowType)
-
-  const highlight = (text: string, keyword: string) =>
-    text.replace(
-      new RegExp(keyword, "g"),
-      `<span style="color:red;font-weight:bold;">${keyword}</span>`
-    )
-
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -181,19 +153,63 @@ export default function SpeakingSliderApp() {
     setIsRecording(false)
   }
 
+  // 조건부 렌더링
+  if (!user) {
+    return (
+      <div className={styles.wrapper}>
+        <h2>🔒 로그인이 필요합니다</h2>
+        <button
+          className={styles.loginButton}
+          onClick={() => signInWithPopup(auth, provider)}
+        >
+          Google 계정으로 로그인
+        </button>
+      </div>
+    )
+  }
+
+  if (!result) {
+    return <div className={styles.wrapper}>로딩 중…</div>
+  }
+
+  if (slides.length === 0) {
+    return <div className={styles.wrapper}>슬라이드가 없습니다.</div>
+  }
+
+  const currentIdx = WINDOW_ORDER.indexOf(current.windowType)
+
+  const highlight = (text: string, keyword: string) =>
+    text.replace(
+      new RegExp(keyword, "g"),
+      `<span style="color:red;font-weight:bold;">${keyword}</span>`
+    )
+
   return (
     <div className={styles.wrapper}>
-      <button
-        className={styles.logoutButton}
-        onClick={() => signOut(auth)}
-      >
-        🚪 로그아웃
-      </button>
+      {/* ── 헤더 ───────────────────────── */}
+      <header className={styles.header}>
+        {/* 왼쪽: 홈 버튼 */}
+        <Link href="/">
+          <a className={styles.homeButton}>M.E.N.G</a>
+        </Link>
 
+        {/* 가운데: 제목 */}
+        <h1 className={styles.pageTitle}>맞춤형 말하기 연습</h1>
+
+        {/* 오른쪽: 로그아웃 */}
+        <button
+          className={styles.logoutButton}
+          onClick={() => signOut(auth)}
+        >
+          🚪 로그아웃
+        </button>
+      </header>
+
+
+      {/* ── 슬라이더 UI ─────── */}
       <div className={styles.windowLabel}>
         {WINDOW_LABELS[current.windowType]}
       </div>
-
       <div className={styles.progressBarTrack}>
         {WINDOW_ORDER.map((_, i) => (
           <div
@@ -206,7 +222,6 @@ export default function SpeakingSliderApp() {
           />
         ))}
       </div>
-
       <div className={styles.slider}>
         <button
           className={styles.navButton}
@@ -231,7 +246,6 @@ export default function SpeakingSliderApp() {
           ▶
         </button>
       </div>
-
       <div className={styles.sentenceBox}>
         <p
           dangerouslySetInnerHTML={{
@@ -249,7 +263,6 @@ export default function SpeakingSliderApp() {
           }}
         />
       </div>
-
       <div className={styles.buttonGroup}>
         <button
           className={`${styles.button} ${styles.listen}`}
@@ -278,7 +291,6 @@ export default function SpeakingSliderApp() {
           ▶ 재생
         </button>
       </div>
-
       <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
