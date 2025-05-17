@@ -15,3 +15,5 @@ const firebaseConfig = {
 if (!getApps().length) {
   initializeApp(firebaseConfig)
 }
+
+console.log("🔥 Firebase initialized!")
