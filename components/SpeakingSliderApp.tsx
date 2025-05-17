@@ -1,4 +1,4 @@
-  // pages/speaking-slider.tsx
+// pages/speaking-slider.tsx
 "use client"
 
 import React, { useEffect, useState, useRef, useMemo } from "react"
@@ -14,15 +14,17 @@ import {
 import { strengths } from "../src/data/strengths"
 import styles from "../styles/SpeakingSliderApp.module.css"
 
+// Firebase 설정 (환경변수로 관리하세요)
 const firebaseConfig = {
-  apiKey: "AIzaSyCPkxqIO8_gR4zUeC33FkLmahJuv7pArQg",
-  authDomain: "meng-project-df8e1.firebaseapp.com",
-  projectId: "meng-project-df8e1",
-  storageBucket: "meng-project-df8e1.firebasestorage.app",
-  messagingSenderId: "795749690902",
-  appId: "1:795749690902:web:9c788a277e1c30254e0f37",
-  measurementId: "G-1HMZYWKETJ"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
+
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const provider = new GoogleAuthProvider()
@@ -34,16 +36,19 @@ const WINDOW_LABELS: Record<string, string> = {
   hidden: "🤫 숨긴 창",
   unknown: "❓ 미지의 창",
 }
-const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images"
+const IMAGE_BASE =
+  "https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images"
+
+interface ResultType {
+  open: string[]
+  blind: string[]
+  hidden: string[]
+  unknown: string[]
+}
 
 export default function SpeakingSliderPage() {
   const [user, setUser] = useState<User | null>(null)
-  const [result, setResult] = useState<{
-    open: string[]
-    blind: string[]
-    hidden: string[]
-    unknown: string[]
-  } | null>(null)
+  const [result, setResult] = useState<ResultType | null>(null)
 
   const [index, setIndex] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
@@ -53,29 +58,31 @@ export default function SpeakingSliderPage() {
 
   // 1) 로그인 상태 감지
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u)
-    })
-    return unsubscribe
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u))
+    return unsub
   }, [])
 
-  // 2) 로그인 후 데이터 불러오기
+  // 2) 로그인 후 데이터 호출
   useEffect(() => {
-    if (!user?.email) return
+    const email = user?.email ?? ""
+    if (!email) return
+
     ;(async () => {
-      const res = await fetch(
-        `/api/get-strengths?email=${encodeURIComponent(user.email)}`
-      )
-      const data = await res.json()
-      if (data.open) {
-        setResult(data)
-      } else {
-        alert("해당 이메일의 결과가 없습니다.")
+      try {
+        const res = await fetch(
+          `/api/get-strengths?email=${encodeURIComponent(email)}`
+        )
+        const data = await res.json()
+        if (data.open) setResult(data)
+        else alert("해당 이메일의 결과가 없습니다.")
+      } catch (err) {
+        console.error(err)
+        alert("데이터를 불러오는 중 오류가 발생했습니다.")
       }
     })()
   }, [user])
 
-  // 3) 로그인 전 화면
+  // 로그인 전 화면
   if (!user) {
     return (
       <div className={styles.wrapper}>
@@ -90,16 +97,16 @@ export default function SpeakingSliderPage() {
     )
   }
 
-  // 4) 로그인 후 로딩 중
+  // 데이터 로딩 중
   if (!result) {
     return <div className={styles.wrapper}>로딩 중…</div>
   }
 
-  // 슬라이드용 배열 만들기
+  // 슬라이드용 배열 구성
   const slides = useMemo(() => {
     const all: any[] = []
     for (const type of WINDOW_ORDER) {
-      ;(result[type] || []).forEach((h: string) => {
+      ;(result[type] || []).forEach((h) => {
         const s = strengths.find((st) => st.hanzi === h)
         if (s) all.push({ ...s, windowType: type })
       })
@@ -148,7 +155,9 @@ export default function SpeakingSliderPage() {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      })
       const recorder = new MediaRecorder(stream)
       const chunks: BlobPart[] = []
       recorder.ondataavailable = (e) => chunks.push(e.data)
@@ -176,7 +185,7 @@ export default function SpeakingSliderPage() {
 
   return (
     <div className={styles.wrapper}>
-      {/* 로그아웃 */}
+      {/* 로그아웃 버튼 */}
       <button
         className={styles.logoutButton}
         onClick={() => signOut(auth)}
@@ -184,12 +193,10 @@ export default function SpeakingSliderPage() {
         🚪 로그아웃
       </button>
 
-      {/* 창 라벨 */}
       <div className={styles.windowLabel}>
         {WINDOW_LABELS[current.windowType]}
       </div>
 
-      {/* 프로그레스 바 */}
       <div className={styles.progressBarTrack}>
         {WINDOW_ORDER.map((_, i) => (
           <div
@@ -203,7 +210,6 @@ export default function SpeakingSliderPage() {
         ))}
       </div>
 
-      {/* 슬라이더 */}
       <div className={styles.slider}>
         <button
           className={styles.navButton}
@@ -216,7 +222,6 @@ export default function SpeakingSliderPage() {
             src={`${IMAGE_BASE}/${current.hanzi}.png`}
             alt={current.hanzi}
             className={styles.img}
-            key={current.hanzi}
           />
         </div>
         <button
@@ -229,7 +234,6 @@ export default function SpeakingSliderPage() {
         </button>
       </div>
 
-      {/* 문장 */}
       <div className={styles.sentenceBox}>
         <p
           dangerouslySetInnerHTML={{
@@ -248,7 +252,6 @@ export default function SpeakingSliderPage() {
         />
       </div>
 
-      {/* 버튼 그룹 */}
       <div className={styles.buttonGroup}>
         <button
           className={`${styles.button} ${styles.listen}`}
@@ -282,4 +285,3 @@ export default function SpeakingSliderPage() {
     </div>
   )
 }
-
