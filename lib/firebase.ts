@@ -2,14 +2,16 @@
 import { initializeApp, getApps } from 'firebase/app'
 
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: "AIzaSyCPkxqIO8_gR4zUeC33FkLmahJuv7pArQg",
+  authDomain: "meng-project-df8e1.firebaseapp.com",
+  projectId: "meng-project-df8e1",
+  storageBucket: "meng-project-df8e1.firebasestorage.app",
+  messagingSenderId: "795749690902",
+  appId: "1:795749690902:web:9c788a277e1c30254e0f37",
+  measurementId: "G-1HMZYWKETJ"
 }
 
+// 이미 초기화된 앱이 없을 때만 실행
 if (!getApps().length) {
   initializeApp(firebaseConfig)
 }
