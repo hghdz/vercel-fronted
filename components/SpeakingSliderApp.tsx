@@ -4,11 +4,23 @@ import React, { useRef, useState, useMemo } from 'react'
 import { strengths } from '../src/data/strengths'
 import styles from './SpeakingSliderApp.module.css'
 
-const studentResults = {
-  하현우: { open: ["创造力", "好奇心"], blind: ["判断力"], hidden: ["勇敢"], unknown: ["领导力"] },
-  김민지: { open: ["热情", "善良"], blind: ["洞察力"], hidden: ["坚持"], unknown: ["信仰"] },
-  박소연: { open: ["诚实", "爱心"], blind: ["懂别人"], hidden: ["谨慎"], unknown: ["希望"] },
-} as const
+const [result, setResult] = useState<any>(null)
+useEffect(() => {
+  const fetchStrengths = async () => {
+    if (!user?.email) return
+
+    const res = await fetch(`/api/get-strengths?email=${user.email}`)
+    const data = await res.json()
+
+    if (data?.open) {
+      setResult(data)
+    } else {
+      alert('해당 이메일의 결과가 없습니다.')
+    }
+  }
+
+  fetchStrengths()
+}, [user?.email])
 
 const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"] as const
 const WINDOW_LABELS: Record<string, string> = {
@@ -29,17 +41,21 @@ const SpeakingSliderApp = () => {
 
   const result = studentResults[selectedStudent]
 
-  const slides = useMemo(() => {
-    const all: any[] = []
-    for (const type of WINDOW_ORDER) {
-      const hanziList = result[type] || []
-      hanziList.forEach((hanzi: string) => {
-        const data = strengths.find((s) => s.hanzi === hanzi)
-        if (data) all.push({ ...data, windowType: type })
-      })
-    }
-    return all
-  }, [result])
+const slides = useMemo(() => {
+  const all: any[] = []
+  if (!result) return all
+
+  for (const type of WINDOW_ORDER) {
+    const hanziList = result[type] || []
+    hanziList.forEach((hanzi: string) => {
+      const data = strengths.find((s) => s.hanzi === hanzi)
+      if (data) all.push({ ...data, windowType: type })
+    })
+  }
+
+  return all
+}, [result])
+
 
   const current = slides[index]
 
