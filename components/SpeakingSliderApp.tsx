@@ -15,6 +15,7 @@ const WINDOW_LABELS: Record<string, string> = {
 }
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
 
+
 const SpeakingSliderApp = () => {
   const [user, setUser] = useState<any>(null)
   const [result, setResult] = useState<any>(null)
