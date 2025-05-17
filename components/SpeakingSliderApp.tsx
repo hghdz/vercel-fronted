@@ -12,17 +12,10 @@ const studentResults = {
 
 const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"] as const
 const WINDOW_LABELS: Record<string, string> = {
-  open: "열린 창",
-  blind: "보이지 않는 창",
-  hidden: "숨긴 창",
-  unknown: "미지의 창",
-}
-
-const WINDOW_EMOJIS: Record<string, string> = {
-  open: "🟢",
-  blind: "👁",
-  hidden: "🙈",
-  unknown: "❓",
+  open: "🔓 열린 창",
+  blind: "🙈 보이지 않는 창",
+  hidden: "🤫 숨긴 창",
+  unknown: "❓ 미지의 창",
 }
 
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
@@ -49,39 +42,37 @@ const SpeakingSliderApp = () => {
   }, [result])
 
   const current = slides[index]
-  const currentWindowIndex = WINDOW_ORDER.indexOf(current.windowType)
 
   const highlight = (text: string, keyword: string) =>
     text.replace(new RegExp(keyword, 'g'), `<span style="color:red;font-weight:bold;">${keyword}</span>`)
 
   const sentence = {
-    zh: (
-      current.windowType === "blind"
+    zh:
+      (current.windowType === "blind"
         ? `朋友说${current.baseSentence}`
         : current.windowType === "hidden"
         ? `我觉得${current.baseSentence}`
         : current.windowType === "unknown"
         ? current.unknownSentence
-        : current.baseSentence 
-    ) +"。"，
-    py: (
+        : current.baseSentence) + "。",
+
+    py:
       current.windowType === "blind"
         ? `Péngyou shuō ${current.basePinyin}`
         : current.windowType === "hidden"
         ? `Wǒ juéde ${current.basePinyin}`
         : current.windowType === "unknown"
         ? current.unknownPinyin
-        : current.basePinyin
-    ),
-    kr: (
+        : current.basePinyin,
+
+    kr:
       current.windowType === "blind"
         ? `친구가 말하길 ${current.desc}`
         : current.windowType === "hidden"
         ? `내가 생각하기에 ${current.desc}`
         : current.windowType === "unknown"
         ? current.unknownDesc
-        : current.desc
-    )
+        : current.desc,
   }
 
   const startRecording = async () => {
@@ -114,29 +105,24 @@ const SpeakingSliderApp = () => {
     setIsRecording(false)
   }
 
+  const currentWindowIndex = WINDOW_ORDER.indexOf(current.windowType)
+
   return (
     <div className={styles.wrapper}>
-      {/* 🔹 창 이름 (중앙 + 이모지) */}
-      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-        {WINDOW_EMOJIS[current.windowType]} {WINDOW_LABELS[current.windowType]}
+      <div className={styles.windowLabel}>{WINDOW_LABELS[current.windowType]}</div>
+
+      <div className={styles.progressBarTrack}>
+        {WINDOW_ORDER.map((type, i) => (
+          <div
+            key={type}
+            className={styles.progressSegment}
+            style={{
+              backgroundColor: i === currentWindowIndex ? '#6366f1' : '#e5e7eb'
+            }}
+          />
+        ))}
       </div>
 
-      {/* 🔹 프로그레스 바 (4구간 고정) */}
-      <div className={styles.progressBarWrapper}>
-        <div className={styles.progressBarTrack}>
-          {WINDOW_ORDER.map((type, i) => (
-            <div
-              key={type}
-              className={styles.progressSegment}
-              style={{
-                backgroundColor: i === currentWindowIndex ? '#6366f1' : '#e5e7eb'
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* 🔹 슬라이드 */}
       <div className={styles.slider}>
         <button className={styles.navButton} onClick={() => setIndex((i) => Math.max(0, i - 1))}>◀</button>
 
@@ -154,14 +140,12 @@ const SpeakingSliderApp = () => {
         <button className={styles.navButton} onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>▶</button>
       </div>
 
-      {/* 🔹 문장 박스 */}
       <div className={styles.sentenceBox}>
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.pinyin) }} />
         <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }} />
       </div>
 
-      {/* 🔹 버튼 */}
       <div className={styles.buttonGroup}>
         <button className={`${styles.button} ${styles.listen}`} onClick={() => {
           const utter = new SpeechSynthesisUtterance(sentence.zh)
