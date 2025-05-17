@@ -1,10 +1,6 @@
-import dynamic from "next/dynamic"
-
-const DynamicSpeakingSliderApp = dynamic(
-  () => import("../components/SpeakingSliderApp"),
-  { ssr: false }
-)
+'use client'
+import SpeakingSliderApp from '../components/SpeakingSliderApp'
 
 export default function SpeakingSliderPage() {
-  return <DynamicSpeakingSliderApp />
+  return <SpeakingSliderApp />
 }
