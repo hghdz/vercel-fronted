@@ -1,3 +1,6 @@
+import Navbar from '../components/Navbar'  // 경로는 상황에 따라 달라질 수 있음
+
+
 import type { AppProps } from 'next/app'
 import '../styles/globals.css'
 
