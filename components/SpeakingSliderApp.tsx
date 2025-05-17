@@ -15,7 +15,6 @@ const WINDOW_LABELS: Record<string, string> = {
 }
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
 
-
 const SpeakingSliderApp = () => {
   const [user, setUser] = useState<any>(null)
   const [result, setResult] = useState<any>(null)
@@ -24,15 +23,33 @@ const SpeakingSliderApp = () => {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // 로그인 상태 감지
+  // 부모 창에서 postMessage로 로그인 정보 받기
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (event.data?.type === 'LOGIN_SUCCESS' && event.data.user) {
+        console.log("✅ 부모창에서 로그인 정보 수신:", event.data.user)
+        setUser(event.data.user)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [])
+
+  // Firebase 로그인 상태 감지 (선택적, 부모 메시지가 안 올 때 대비)
   useEffect(() => {
     const auth = getAuth()
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      console.log("🧑‍💻 로그인 상태:", currentUser)
-      setUser(currentUser)
+      console.log("🧑‍💻 Firebase 로그인 상태:", currentUser)
+      if (!user) {
+        setUser(currentUser)
+      }
     })
     return () => unsubscribe()
-  }, [])
+  }, [user])
 
   // MongoDB에서 강점 데이터 불러오기
   useEffect(() => {
@@ -229,4 +246,3 @@ const SpeakingSliderApp = () => {
 }
 
 export default SpeakingSliderApp
-
