@@ -2,7 +2,6 @@
 
 import '../lib/firebase'
 import React, { useEffect, useState, useRef, useMemo } from 'react'
-import { getAuth } from 'firebase/auth'
 import { strengths } from '../src/data/strengths'
 import styles from './SpeakingSliderApp.module.css'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
