@@ -1,4 +1,8 @@
 'use client'
+useEffect(() => {
+  console.log("✅ 로그인한 사용자 이메일:", user?.email);
+}, [user?.email]);
+
 
 import React, { useRef, useState, useMemo, useEffect } from 'react'
 import { strengths } from '../src/data/strengths'
