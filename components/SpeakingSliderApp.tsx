@@ -1,4 +1,4 @@
-// pages/speaking-slider.tsx
+// components/SpeakingSliderApp.tsx
 "use client"
 
 import React, { useEffect, useState, useRef, useMemo } from "react"
@@ -14,19 +14,14 @@ import {
 import { strengths } from "../src/data/strengths"
 import styles from "../styles/SpeakingSliderApp.module.css"
 
-// Firebase 설정 (환경변수로 관리하세요)
+// Firebase 초기화
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
-
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
+initializeApp(firebaseConfig)
+const auth = getAuth()
 const provider = new GoogleAuthProvider()
 
 const WINDOW_ORDER = ["open", "blind", "hidden", "unknown"] as const
@@ -46,83 +41,54 @@ interface ResultType {
   unknown: string[]
 }
 
-export default function SpeakingSliderPage() {
+export default function SpeakingSliderApp() {
+  // ──────── 모든 훅은 여기, 최상단 ────────
   const [user, setUser] = useState<User | null>(null)
   const [result, setResult] = useState<ResultType | null>(null)
-
   const [index, setIndex] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] =
     useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // 1) 로그인 상태 감지
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u))
     return unsub
   }, [])
 
-  // 2) 로그인 후 데이터 호출
   useEffect(() => {
     const email = user?.email ?? ""
     if (!email) return
-
     ;(async () => {
-      try {
-        const res = await fetch(
-          `/api/get-strengths?email=${encodeURIComponent(email)}`
-        )
-        const data = await res.json()
-        if (data.open) setResult(data)
-        else alert("해당 이메일의 결과가 없습니다.")
-      } catch (err) {
-        console.error(err)
-        alert("데이터를 불러오는 중 오류가 발생했습니다.")
-      }
+      const res = await fetch(
+        `/api/get-strengths?email=${encodeURIComponent(email)}`
+      )
+      const data = await res.json()
+      if (data.open) setResult(data)
+      else alert("해당 이메일 결과가 없습니다.")
     })()
   }, [user])
 
-  // 로그인 전 화면
-  if (!user) {
-    return (
-      <div className={styles.wrapper}>
-        <h2>🔒 로그인이 필요합니다</h2>
-        <button
-          className={styles.loginButton}
-          onClick={() => signInWithPopup(auth, provider)}
-        >
-          Google 계정으로 로그인
-        </button>
-      </div>
-    )
-  }
-
-  // 데이터 로딩 중
-  if (!result) {
-    return <div className={styles.wrapper}>로딩 중…</div>
-  }
-
-  // 슬라이드용 배열 구성
   const slides = useMemo(() => {
+    if (!result) return []
     const all: any[] = []
-    for (const type of WINDOW_ORDER) {
-      ;(result[type] || []).forEach((h) => {
+    WINDOW_ORDER.forEach((type) =>
+      (result[type] || []).forEach((h) => {
         const s = strengths.find((st) => st.hanzi === h)
         if (s) all.push({ ...s, windowType: type })
       })
-    }
+    )
     return all
   }, [result])
 
+  useEffect(() => {
+    if (index >= slides.length) {
+      setIndex(0)
+    }
+  }, [slides, index])
+
+  // 📌 sentence 훅도 최상단 훅 그룹에 포함
   const current = slides[index]!
-  const currentWindowIndex = WINDOW_ORDER.indexOf(current.windowType)
-
-  const highlight = (text: string, keyword: string) =>
-    text.replace(
-      new RegExp(keyword, "g"),
-      `<span style="color:red;font-weight:bold;">${keyword}</span>`
-    )
-
   const sentence = useMemo(() => {
     if (!current) return { zh: "", py: "", kr: "" }
     return {
@@ -152,6 +118,38 @@ export default function SpeakingSliderPage() {
           : current.desc,
     }
   }, [current])
+
+  // ───── 조건부 렌더링 ─────
+  if (!user) {
+    return (
+      <div className={styles.wrapper}>
+        <h2>🔒 로그인이 필요합니다</h2>
+        <button
+          className={styles.loginButton}
+          onClick={() => signInWithPopup(auth, provider)}
+        >
+          Google 계정으로 로그인
+        </button>
+      </div>
+    )
+  }
+
+  if (!result) {
+    return <div className={styles.wrapper}>로딩 중…</div>
+  }
+
+  if (slides.length === 0) {
+    return <div className={styles.wrapper}>슬라이드가 없습니다.</div>
+  }
+
+  // ───── 최종 렌더링 ─────
+  const currentIdx = WINDOW_ORDER.indexOf(current.windowType)
+
+  const highlight = (text: string, keyword: string) =>
+    text.replace(
+      new RegExp(keyword, "g"),
+      `<span style="color:red;font-weight:bold;">${keyword}</span>`
+    )
 
   const startRecording = async () => {
     try {
@@ -185,7 +183,6 @@ export default function SpeakingSliderPage() {
 
   return (
     <div className={styles.wrapper}>
-      {/* 로그아웃 버튼 */}
       <button
         className={styles.logoutButton}
         onClick={() => signOut(auth)}
@@ -204,7 +201,7 @@ export default function SpeakingSliderPage() {
             className={styles.progressSegment}
             style={{
               backgroundColor:
-                i === currentWindowIndex ? "#6366f1" : "#e5e7eb",
+                i === currentIdx ? "#6366f1" : "#e5e7eb",
             }}
           />
         ))}
@@ -222,6 +219,7 @@ export default function SpeakingSliderPage() {
             src={`${IMAGE_BASE}/${current.hanzi}.png`}
             alt={current.hanzi}
             className={styles.img}
+            key={current.hanzi}
           />
         </div>
         <button

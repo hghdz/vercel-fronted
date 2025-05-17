@@ -1,36 +1,54 @@
 // pages/api/get-strengths.ts
-import type { NextApiRequest, NextApiResponse } from 'next'
-import clientPromise from '../../lib/mongodb'
+import type { NextApiRequest, NextApiResponse } from "next"
+import clientPromise from "../../lib/mongodb"
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const email = typeof req.query.email === 'string' ? req.query.email : null
+type ResponseData =
+  | { open: string[]; blind: string[]; hidden: string[]; unknown: string[] }
+  | { error: string }
 
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>
+) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" })
+  }
+
+  // 쿼리에서 이메일 꺼내기
+  const email = Array.isArray(req.query.email)
+    ? req.query.email[0]
+    : req.query.email || ""
   if (!email) {
-    return res.status(400).json({ error: 'Missing or invalid email' })
+    return res.status(400).json({ error: "Missing email query" })
   }
 
   try {
     const client = await clientPromise
-    const db = client.db('MENG')
-    const collection = db.collection('strengths')
+    const db = client.db("MENG")               // 데이터베이스 이름
+    const doc = await db
+      .collection<{
+        strengths: string[][]
+      }>("strengths")                          // 컬렉션 이름
+      .findOne({ email })
 
-    const data = await collection.findOne({ email })
-
-    if (!data) {
-      return res.status(404).json({ error: 'No results found for this email' })
+    if (!doc) {
+      return res
+        .status(404)
+        .json({ error: `No strengths found for ${email}` })
     }
 
-    // 데이터 안전성 확보 (undefined 방지)
-    const response = {
-      open: Array.isArray(data.open) ? data.open : [],
-      blind: Array.isArray(data.blind) ? data.blind : [],
-      hidden: Array.isArray(data.hidden) ? data.hidden : [],
-      unknown: Array.isArray(data.unknown) ? data.unknown : [],
-    }
+    // MongoDB에 저장된 3단계 배열 꺼내기
+    const [s1 = [], s2 = [], s3 = []] = doc.strengths
 
-    res.status(200).json(response)
-  } catch (error) {
-    console.error('MongoDB fetch error:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    // 네 개의 창으로 분리
+    const open = s1.filter((x) => s2.includes(x))
+    const blind = s2.filter((x) => !s1.includes(x))
+    const hidden = s1.filter((x) => !s2.includes(x))
+    const unknown = s3
+
+    return res.status(200).json({ open, blind, hidden, unknown })
+  } catch (err: any) {
+    console.error("get-strengths error:", err)
+    return res.status(500).json({ error: "Internal Server Error" })
   }
 }
