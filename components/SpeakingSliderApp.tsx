@@ -1,13 +1,9 @@
 'use client'
-useEffect(() => {
-  console.log("✅ 로그인한 사용자 이메일:", user?.email);
-}, [user?.email]);
-
 
 import React, { useRef, useState, useMemo, useEffect } from 'react'
+import { getAuth } from 'firebase/auth'
 import { strengths } from '../src/data/strengths'
 import styles from './SpeakingSliderApp.module.css'
-import { useUser } from '@auth0/nextjs-auth0/client' // 혹은 Google 로그인 context
 
 const WINDOW_ORDER = ['open', 'blind', 'hidden', 'unknown'] as const
 const WINDOW_LABELS: Record<string, string> = {
@@ -19,12 +15,19 @@ const WINDOW_LABELS: Record<string, string> = {
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
 
 const SpeakingSliderApp = () => {
-  const { user } = useUser() // 로그인된 유저 정보 가져오기
+  const auth = getAuth()
+  const user = auth.currentUser
+
   const [result, setResult] = useState<any>(null)
   const [index, setIndex] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // ✅ 콘솔에 이메일 출력 (디버깅용)
+  useEffect(() => {
+    console.log("✅ 로그인한 사용자 이메일:", user?.email)
+  }, [user?.email])
 
   // ✅ MongoDB에서 강점 데이터 불러오기
   useEffect(() => {
