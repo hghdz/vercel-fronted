@@ -3,16 +3,16 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from '../../lib/mongodb'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { email } = req.query
+  const email = typeof req.query.email === 'string' ? req.query.email : null
 
-  if (!email || typeof email !== 'string') {
+  if (!email) {
     return res.status(400).json({ error: 'Missing or invalid email' })
   }
 
   try {
     const client = await clientPromise
-    const db = client.db('MENG') // ✅ 실제 DB 이름
-    const collection = db.collection('strengths') // ✅ 검사 결과가 저장된 컬렉션
+    const db = client.db('MENG')
+    const collection = db.collection('strengths')
 
     const data = await collection.findOne({ email })
 
@@ -20,12 +20,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'No results found for this email' })
     }
 
-    res.status(200).json({
-      open: data.open || [],
-      blind: data.blind || [],
-      hidden: data.hidden || [],
-      unknown: data.unknown || []
-    })
+    // 데이터 안전성 확보 (undefined 방지)
+    const response = {
+      open: Array.isArray(data.open) ? data.open : [],
+      blind: Array.isArray(data.blind) ? data.blind : [],
+      hidden: Array.isArray(data.hidden) ? data.hidden : [],
+      unknown: Array.isArray(data.unknown) ? data.unknown : [],
+    }
+
+    res.status(200).json(response)
   } catch (error) {
     console.error('MongoDB fetch error:', error)
     res.status(500).json({ error: 'Internal server error' })

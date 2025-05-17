@@ -10,6 +10,12 @@ if (!uri) {
 let client: MongoClient
 let clientPromise: Promise<MongoClient>
 
+client = new MongoClient(uri, {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+})
+
+
 declare global {
   var _mongoClientPromise: Promise<MongoClient>
 }
