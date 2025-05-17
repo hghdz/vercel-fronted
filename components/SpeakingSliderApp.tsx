@@ -26,26 +26,28 @@ const SpeakingSliderApp = () => {
   // 부모 창에서 postMessage로 로그인 정보 받기
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
-      if (event.data?.type === 'LOGIN_SUCCESS' && event.data.user) {
-        console.log("✅ 부모창에서 로그인 정보 수신:", event.data.user)
-        setUser(event.data.user)
+      if (event.data?.type === "LOGIN_SUCCESS") {
+        const userData = event.data.user
+        console.log("💬 부모창으로부터 로그인 정보 수신:", userData)
+        setUser(userData)
       }
     }
-
-    window.addEventListener('message', handleMessage)
-
+    window.addEventListener("message", handleMessage)
     return () => {
-      window.removeEventListener('message', handleMessage)
+      window.removeEventListener("message", handleMessage)
     }
   }, [])
 
-  // Firebase 로그인 상태 감지 (선택적, 부모 메시지가 안 올 때 대비)
+  // Firebase 직접 로그인 상태 감지 (iframe 내에서 독립적으로 로그인 상태를 확인하고 싶으면 유지)
   useEffect(() => {
     const auth = getAuth()
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       console.log("🧑‍💻 Firebase 로그인 상태:", currentUser)
-      if (!user) {
-        setUser(currentUser)
+      if (currentUser && !user) {
+        setUser({
+          email: currentUser.email,
+          name: currentUser.displayName,
+        })
       }
     })
     return () => unsubscribe()
