@@ -2,27 +2,9 @@
 
 import '../lib/firebase'
 import React, { useEffect, useState, useRef, useMemo } from 'react'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { strengths } from '../src/data/strengths'
 import styles from './SpeakingSliderApp.module.css'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
-
-// 컴포넌트 내부에서
-const [user, setUser] = useState<any>(null)
-
-useEffect(() => {
-  const auth = getAuth()
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    console.log("🧑‍💻 로그인 상태:", currentUser)
-    setUser(currentUser)
-  })
-  return () => unsubscribe()
-}, [])
-
-if (!user) {
-  return <div className={styles.wrapper}>🔐 로그인이 필요합니다</div>
-}
-
-
 
 const WINDOW_ORDER = ['open', 'blind', 'hidden', 'unknown'] as const
 const WINDOW_LABELS: Record<string, string> = {
@@ -34,25 +16,29 @@ const WINDOW_LABELS: Record<string, string> = {
 const IMAGE_BASE = 'https://cdn.jsdelivr.net/gh/hghdz/card-selector-app/images'
 
 const SpeakingSliderApp = () => {
-  const auth = getAuth()
-  const user = auth.currentUser
-
+  const [user, setUser] = useState<any>(null)
   const [result, setResult] = useState<any>(null)
   const [index, setIndex] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // ✅ 콘솔에 이메일 출력 (디버깅용)
+  // 로그인 상태 감지
   useEffect(() => {
-    console.log("✅ 로그인한 사용자 이메일:", user?.email)
-  }, [user?.email])
+    const auth = getAuth()
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("🧑‍💻 로그인 상태:", currentUser)
+      setUser(currentUser)
+    })
+    return () => unsubscribe()
+  }, [])
 
-  // ✅ MongoDB에서 강점 데이터 불러오기
+  // MongoDB에서 강점 데이터 불러오기
   useEffect(() => {
     const fetchStrengths = async () => {
       if (!user?.email) return
 
+      console.log("✅ 로그인한 사용자 이메일:", user.email)
       const res = await fetch(`/api/get-strengths?email=${user.email}`)
       const data = await res.json()
 
@@ -151,6 +137,7 @@ const SpeakingSliderApp = () => {
 
   const currentWindowIndex = current ? WINDOW_ORDER.indexOf(current.windowType) : -1
 
+  if (!user) return <div className={styles.wrapper}>🔐 로그인이 필요합니다</div>
   if (!result || slides.length === 0) return <div className={styles.wrapper}>로딩 중...</div>
 
   return (
@@ -241,3 +228,4 @@ const SpeakingSliderApp = () => {
 }
 
 export default SpeakingSliderApp
+
