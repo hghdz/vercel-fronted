@@ -151,13 +151,11 @@
 
 .sentenceBox {
   background-color: #f3e8ff;
-  padding: 1rem;
+  padding: 20px 5%;
   border-radius: 12px;
-  margin-top: 1.2rem;
-  margin-bottom: 1.2rem;
-  font-size: 1.1rem;
-  line-height: 1.6;
   text-align: center;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 
