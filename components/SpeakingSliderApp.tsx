@@ -5,6 +5,25 @@ import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { getAuth } from 'firebase/auth'
 import { strengths } from '../src/data/strengths'
 import styles from './SpeakingSliderApp.module.css'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
+
+// 컴포넌트 내부에서
+const [user, setUser] = useState<any>(null)
+
+useEffect(() => {
+  const auth = getAuth()
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    console.log("🧑‍💻 로그인 상태:", currentUser)
+    setUser(currentUser)
+  })
+  return () => unsubscribe()
+}, [])
+
+if (!user) {
+  return <div className={styles.wrapper}>🔐 로그인이 필요합니다</div>
+}
+
+
 
 const WINDOW_ORDER = ['open', 'blind', 'hidden', 'unknown'] as const
 const WINDOW_LABELS: Record<string, string> = {
