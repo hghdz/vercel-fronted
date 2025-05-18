@@ -239,7 +239,6 @@ export default function MBTISpeakingSliderApp() {
         </select>
       </div>
       <div ref={practiceAreaRef} id="practiceArea" />
-      <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
 }
