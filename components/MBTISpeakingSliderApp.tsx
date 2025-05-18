@@ -23,181 +23,197 @@ initializeApp(firebaseConfig)
 const auth = getAuth()
 const provider = new GoogleAuthProvider()
 
-// MBTI 슬라이드 순서
-const MBTI_ORDER = ["E","S","F","J"] as const
-const ICON_BASE =
-  "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images"
-// MBTI 글자 ↔ 중국어 아이콘 맵
-const ICON_MAP: Record<string, string> = {
-  E: "外向",
-  I: "内向",
-  S: "感觉",
-  N: "直觉",
-  F: "情感",
-  T: "思考",
-  J: "判断",
-  P: "知觉",
-}
-// 반대 페어 매핑
-const OPPOSITE_MAP: Record<string, string> = {
-  E: 'I', I: 'E',
-  S: 'N', N: 'S',
-  F: 'T', T: 'F',
-  J: 'P', P: 'J',
-}
-
-interface Sentence {
-  zh: string
-  py: string
-  kr: string
-}
-
-function makeSentence(
-  mbti: string,
-  idx: number,
-  mode: "basic" | "advanced"
-): Sentence {
-  const letter = mbti[idx]
-  const chinese = ICON_MAP[letter]
-  if (mode === "basic") {
-    return {
-      zh: `我是${chinese}。`,  
-      py: `Wǒ shì ${chinese}.`,  
-      kr: `(나는 ${chinese}야.)`,
-    }
-  } else {
-    // 심화형: 반대 페어 묻기
-    const opp = ICON_MAP[OPPOSITE_MAP[letter] || letter]
-    return {
-      zh: `你是${chinese}还是${opp}？`,  
-      py: `Nǐ shì ${chinese} háishi ${opp}?`,  
-      kr: `(너는 ${chinese}이니 아니면 ${opp}이니?)`,
-    }
-  }
-}
-
 export default function MBTISpeakingSliderApp() {
+  // Authentication
   const [user, setUser] = useState<User | null>(null)
-  const [mbti, setMbti] = useState<string | null>(null)
-  const [mode, setMode] = useState<"basic" | "advanced">("basic")
-  const [index, setIndex] = useState(0)
-  const [isRecording, setIsRecording] = useState(false)
-  const [recorder, setRecorder] = useState<MediaRecorder | null>(null)
-  const audioRef = useRef<HTMLAudioElement>(null)
-
-  //로그인 상태 추적
   useEffect(() => onAuthStateChanged(auth, u => setUser(u)), [])
 
-  // 로그인 시 MBTI 데이터 로드
+  // Fetch MBTI result
+  const [resultType, setResultType] = useState<string | null>(null)
   useEffect(() => {
-    const email = user?.email
-    if (!email) return
-    fetch(`/api/get-mbti?email=${encodeURIComponent(email)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.mbti) setMbti(data.mbti)
-        else alert("MBTI 결과가 없습니다.")
-      })
-      .catch(() => alert("MBTI 데이터를 불러오는 중 오류가 발생했습니다."))
+    if (user?.email) {
+      fetch(`/api/get-mbti?email=${encodeURIComponent(user.email)}`)
+        .then(res => res.json())
+        .then(data => setResultType(data.mbti))
+        .catch(() => alert("MBTI 결과를 불러오는 중 오류가 발생했습니다."))
+    }
   }, [user])
 
-  // 슬라이드 배열
-  const slides = useMemo(() => {
-    if (!mbti) return []
-    return MBTI_ORDER.map(l => ({ letter: mbti[MBTI_ORDER.indexOf(l)] }))
-  }, [mbti])
+  // Practice state
+  const [mode, setMode] = useState<'basic'|'advanced'>('basic')
+  const [idx, setIdx] = useState(0)
+  const [step, setStep] = useState(0)
+  const [recorder, setRecorder] = useState<MediaRecorder | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const practiceAreaRef = useRef<HTMLDivElement>(null)
 
-  // 녹음 시작
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const rec = new MediaRecorder(stream)
-      const chunks: BlobPart[] = []
-      rec.ondataavailable = e => chunks.push(e.data)
-      rec.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" })
-        const url = URL.createObjectURL(blob)
-        if (audioRef.current) {
-          audioRef.current.src = url
-          audioRef.current.play()
-        }
-        setRecorder(null)
-      }
-      rec.start()
-      setRecorder(rec)
-      setIsRecording(true)
-    } catch {
-      alert("마이크 권한이 필요합니다.")
+  // Data mappings
+  const letters = useMemo(() => resultType?.split('') || [], [resultType])
+  const basicPairs = [['E','I'],['S','N'],['F','T'],['J','P']]
+  const imageMap = { E:'外向.png', I:'内向.png', S:'感觉.png', N:'直觉.png', F:'情感.png', T:'思考.png', J:'判断.png', P:'知觉.png' }
+  const fullMap: Record<string,[string,string]> = {
+    E:['外向','内向'], I:['内向','外向'],
+    S:['感觉','直觉'], N:['直觉','感觉'],
+    F:['情感','思考'], T:['思考','情感'],
+    J:['判断','知觉'], P:['知觉','判断'],
+  }
+  const pinyinMap: Record<string,string> = {
+    '外向':'wàixiàng','内向':'nèixiàng','感觉':'gǎnjué','直觉':'zhíjué',
+    '情感':'qínggǎn','思考':'sīkǎo','判断':'pànduàn','知觉':'zhījué'
+  }
+  const korMap: Record<string,string> = {
+    '外向':'외향','内向':'내향','感觉':'감각','直觉':'직관',
+    '情感':'감정','思考':'사고','判断':'판단','知觉':'인지'
+  }
+  const baseUrl = 'https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/'
+
+  // Recorder helper
+  function attachRecorder(btn: HTMLButtonElement) {
+    btn.onclick = () => {
+      if (!recorder) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+          const r = new MediaRecorder(stream)
+          const chunks: BlobPart[] = []
+          r.ondataavailable = e => chunks.push(e.data)
+          r.onstop = () => {
+            const url = URL.createObjectURL(new Blob(chunks, { type: 'audio/webm' }))
+            if (audioRef.current) { audioRef.current.src = url }
+            setRecorder(null)
+          }
+          r.start()
+          setRecorder(r)
+        })
+      } else { recorder.stop() }
     }
   }
-  const stopRecording = () => {
-    recorder?.stop()
-    setIsRecording(false)
+
+  // Controls: TTS, record, play
+  function addControls(text: string) {
+    const ctrl = document.createElement('div')
+    ctrl.id = 'controls'
+    const ids = ['ttsBtn','recBtn','playBtn'] as const
+    ids.forEach(id => {
+      const b = document.createElement('button')
+      b.id = id
+      b.textContent = id==='ttsBtn' ? '🔊 듣기' : id==='recBtn' ? '⏺️ 녹음' : '▶️ 재생'
+      if (id==='playBtn') b.disabled = true
+      ctrl.appendChild(b)
+    })
+    practiceAreaRef.current?.appendChild(ctrl)
+    document.getElementById('ttsBtn')?.addEventListener('click', () => {
+      const u = new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u.rate=0.7; speechSynthesis.speak(u)
+    })
+    attachRecorder(document.getElementById('recBtn') as HTMLButtonElement)
+    document.getElementById('playBtn')?.addEventListener('click', () => audioRef.current?.play())
   }
 
-  // 랜더링 조건
-  if (!user) {
-    return (
-      <div className={styles.wrapper}>
-        <h2>🔒 로그인이 필요합니다</h2>
-        <button className={styles.loginButton} onClick={() => signInWithPopup(auth, provider)}>
-          Google 계정으로 로그인
-        </button>
-      </div>
-    )
-  }
-  if (!mbti) {
-    return <div className={styles.wrapper}>로딩 중…</div>
-  }
-  if (slides.length === 0) {
-    return <div className={styles.wrapper}>슬라이드가 없습니다.</div>
+  // Append Next button
+  function appendNext(onClick: ()=>void) {
+    const btn = document.createElement('button')
+    btn.className = 'practice-btn'
+    btn.textContent = '다음'
+    btn.onclick = onClick
+    practiceAreaRef.current?.appendChild(btn)
   }
 
-  const slide = slides[index % slides.length]
-  const sentence = makeSentence(mbti, index % slides.length, mode)
+  // Render practice
+  useEffect(() => {
+    if (!resultType) return
+    const area = practiceAreaRef.current!
+    area.innerHTML = ''
+    const imgRow = document.createElement('div'); imgRow.id='imagesRow'; area.appendChild(imgRow)
+    const w = document.createElement('div'); w.className='wrapper'; area.appendChild(w)
+
+    if (mode==='basic') {
+      if (idx < basicPairs.length) {
+        const [A,B] = basicPairs[idx]
+        if (step===0) {
+          imgRow.innerHTML = `<img src="${baseUrl+imageMap[A]}" alt="${A}"/>`
+          w.innerHTML = 
+            `<p>你是<span class='highlight'>${A}</span>还是<span class='highlight'>${B}</span>？</p>
+             <p class='pinyin'>Nǐ shì <span class='highlight'>${A}</span> háishi <span class='highlight'>${B}</span>?</p>
+             <p class='translation'>(너는 ${A}이니 아니면 ${B}이니?)</p>`
+          addControls(`` + `你是${A}还是${B}?`)
+          appendNext(() => setStep(1))
+        } else {
+          const X = letters[idx]
+          imgRow.innerHTML = `<img src="${baseUrl+imageMap[X]}" alt="${X}"/>`
+          w.innerHTML =
+            `<p>我是<span class='highlight'>${X}</span>。</p>
+             <p class='pinyin'>Wǒ shì <span class='highlight'>${X}</span>.</p>
+             <p class='translation'>(나는 ${X}야.)</p>`
+          addControls(`` + `我是${X}`)
+          appendNext(() => { setIdx(idx+1); setStep(0) })
+        }
+      } else {
+        imgRow.innerHTML = letters.map(c => `<img src="${baseUrl+imageMap[c]}" class='half-size' alt='${c}'/>`).join('')
+        if (step===0) {
+          w.innerHTML =
+            `<p>你的MBTI是什么？</p>
+             <p class='pinyin'>Nǐ de MBTI shì shénme?</p>
+             <p class='translation'>(너의 MBTI는 무엇이니?)</p>`
+          addControls('你的MBTI是什么?')
+          appendNext(() => setStep(1))
+        } else {
+          w.innerHTML =
+            `<p>我的MBTI是<span class='highlight'>${resultType}</span>。</p>
+             <p class='pinyin'>Wǒ de MBTI shì <span class='highlight'>${resultType}</span>.</p>
+             <p class='translation'>(나의 MBTI는 ${resultType}야.)</p>`
+          addControls(`` + `我的MBTI是${resultType}`)
+        }
+      }
+    } else {
+      // advanced
+      const [chiA,chiB] = fullMap[letters[idx]]
+      const pinA = pinyinMap[chiA], pinB = pinyinMap[chiB]
+      const korA = korMap[chiA], korB = korMap[chiB]
+      if (step===0) {
+        imgRow.innerHTML = `<img src="${baseUrl+imageMap[letters[idx]]}" alt="${letters[idx]}"/>`
+        w.innerHTML =
+          `<p>你是<span class='highlight'>${chiA}</span>型还是<span class='highlight'>${chiB}</span>型？</p>
+           <p class='pinyin'>Nǐ shì <span class='highlight'>${pinA}</span> xíng háishi <span class='highlight'>${pinB}</span> xíng?</p>
+           <p class='translation'>(너는 ${korA}형이니 아니면 ${korB}형이니?)</p>`
+        addControls(`` + `你是${chiA}型还是${chiB}型?`)
+        appendNext(() => setStep(1))
+      } else {
+        const chi = fullMap[letters[idx]][0]
+        imgRow.innerHTML = `<img src="${baseUrl+imageMap[letters[idx]]}" alt="${letters[idx]}"/>`
+        w.innerHTML =
+          `<p>我是<span class='highlight'>${chi}</span>型。</p>
+           <p class='pinyin'>Wǒ shì <span class='highlight'>${pinyinMap[chi]}</span> xíng.</p>
+           <p class='translation'>(나는 ${korMap[chi]}형이야.)</p>`
+        addControls(`` + `我是${chi}型`)
+        appendNext(() => {
+          if (idx < letters.length-1) { setIdx(idx+1); setStep(0) }
+        })
+      }
+    }
+  }, [mode, idx, step, resultType])
+
+  // Render UI
+  if (!user) return (
+    <div className={styles.wrapper}>
+      <h2>🔒 로그인 필요</h2>
+      <button onClick={() => signInWithPopup(auth,provider)} className={styles.loginButton}>Google 로그인</button>
+    </div>
+  )
+  if (!resultType) return <div className={styles.wrapper}>로딩...</div>
 
   return (
     <div className={styles.wrapper}>
       <header className={styles.header}>
-        <Link href="/"><a className={styles.homeButton}>M.E.N.G</a></Link>
+        <Link href='/'><a className={styles.homeButton}>M.E.N.G</a></Link>
         <h1 className={styles.pageTitle}>MBTI 말하기 연습</h1>
-        <button className={styles.logoutButton} onClick={() => signOut(auth)}>🚪 로그아웃</button>
+        <button onClick={() => signOut(auth)} className={styles.logoutButton}>🚪  로그아웃</button>
       </header>
-      <div className={styles.modeSelector}>
-        <button onClick={() => setMode("basic")} className={mode==="basic"?styles.active:undefined}>기본형</button>
-        <button onClick={() => setMode("advanced")} className={mode==="advanced"?styles.active:undefined}>심화형</button>
+      <h2>말하기 연습</h2>
+      <div className={styles.dropdownWrapper}>
+        <select value={mode} onChange={e=>{ setMode(e.target.value as any); setIdx(0); setStep(0); }}>
+          <option value='basic'>기본 문형 & Q&A</option>
+          <option value='advanced'>심화 문형</option>
+        </select>
       </div>
-      <div className={styles.slider}>
-        <button className={styles.navButton} onClick={() => setIndex(i => Math.max(0, i - 1))}>◀</button>
-        <div className={styles.imageBox}>
-          <img
-            src={`${ICON_BASE}/${ICON_MAP[slide.letter]}.png`}
-            alt={slide.letter}
-            className={styles.img}
-          />
-        </div>
-        <button className={styles.navButton} onClick={() => setIndex(i => i + 1)}>▶</button>
-      </div>
-      <div className={styles.sentenceBox}>
-        <p>{sentence.zh}</p>
-        <p>{sentence.py}</p>
-        <p>{sentence.kr}</p>
-      </div>
-      <div className={styles.buttonGroup}>
-        <button className={`${styles.button} ${styles.listen}`} onClick={() => {
-            const u = new SpeechSynthesisUtterance(sentence.zh)
-            u.lang = "zh-CN"
-            speechSynthesis.speak(u)
-          }}>
-          🔊 듣기
-        </button>
-        <button className={`${styles.button} ${isRecording?styles.stop:styles.record}`} onClick={() => isRecording ? stopRecording() : startRecording()}>
-          {isRecording ? "⏹ 중지" : "🎙 녹음"}
-        </button>
-        <button className={`${styles.button} ${styles.play}`} onClick={() => audioRef.current?.play()}>
-          ▶ 재생
-        </button>
-      </div>
+      <div id='practiceArea' ref={practiceAreaRef}/>
       <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
