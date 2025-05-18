@@ -129,8 +129,20 @@ export default function MBTISpeakingSliderApp() {
     if (mode === "qa") {
       letters.forEach(c => {
         const i = document.createElement("img")
-        i.src = baseUrl + imageMap[c]; i.alt = c; i.className = styles.halfSize
+        i.src = baseUrl + imageMap[c]
+        i.alt = c
+        i.className = styles.halfSize
         imgBox.appendChild(i)
+      })
+    } else {
+      // 카드 키 결정: 항상 정답 카드 사용
+      const cardKey = letters[idx]
+      const i = document.createElement("img")
+      i.src = baseUrl + imageMap[cardKey]
+      i.alt = cardKey
+      i.className = styles.img
+      imgBox.appendChild(i)
+    }
       })
     } else {
       // 카드 키 결정: 항상 정답 카드 사용
@@ -157,7 +169,7 @@ export default function MBTISpeakingSliderApp() {
         setStep(0)
       }
     }
-    slider.append(prevBtn, imgBox, nextBtn)(prevBtn, imgBox, nextBtn)
+    slider.append(prevBtn, imgBox, nextBtn)
     area.appendChild(slider)
 
     // 문장
