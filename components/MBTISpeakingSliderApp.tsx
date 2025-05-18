@@ -194,11 +194,8 @@ export default function MBTISpeakingSliderApp() {
             : `我是${fullMap[letters[idx]][0]}型`)
     )
 
-    // 오디오 엘리먼트 추가
-    const audioEl = document.createElement("audio")
-    audioEl.controls = true
-    practiceAreaRef.current?.appendChild(audioEl)
-    audioRef.current = audioEl
+    // 오디오 엘리먼트 동적 생성 제거
+    // audio element는 JSX 하단에 위치하므로 생성하지 않습니다.
   }, [mode, idx, step, resultType])
 
   if (!user)
@@ -239,6 +236,8 @@ export default function MBTISpeakingSliderApp() {
         </select>
       </div>
       <div ref={practiceAreaRef} id="practiceArea" />
+      {/* 오디오 플레이어: 질문/답변 아래에 고정 배치 */}
+      <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
 }
