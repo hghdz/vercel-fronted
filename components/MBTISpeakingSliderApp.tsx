@@ -116,15 +116,14 @@ export default function MBTISpeakingSliderApp() {
     const imgBox = document.createElement("div")
     imgBox.className = styles.imageBox
     if (mode === "qa") {
-      imgBox.style.width = "auto"
+      imgBox.style.width = "100%"
       imgBox.style.display = "flex"
+      imgBox.style.flexWrap = "wrap"  // 줄바꿈 허용
       imgBox.style.justifyContent = "center"
       imgBox.style.gap = "8px"
       letters.forEach(c => {
-        const img = document.createElement("img")
-        img.src = baseUrl + imageMap[c]
-        img.alt = c
-        img.className = styles.halfSize
+        const img = document.createElement("img");
+        img.src = baseUrl + imageMap[c]; img.alt = c; img.className = styles.halfSize;
         imgBox.appendChild(img)
       })
     } else {
