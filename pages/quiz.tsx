@@ -1,16 +1,17 @@
 // pages/quiz.tsx
-import { useRouter } from 'next/router'
-import { JobValueQuiz } from '../components/JobValueQuiz'
-import questions from '../src/data/questions'                  // JSON이나 JS로 정리해둔 28개 문항
+import React from 'react';
+import { useRouter } from 'next/router';
+import JobValueQuiz, { Question } from '../components/JobValueQuiz';
+import questions from '../src/data/questions';
 
 export default function QuizPage() {
-  const { query } = useRouter()
-  const email = Array.isArray(query.email) ? query.email[0] : query.email || ''
+  const router = useRouter();
+  const email = router.query.email as string;
 
-  return (
-    <div>
-      {/* Navbar, 헤더 등 레이아웃이 필요하면 여기 */}
-      <JobValueQuiz questions={questions} email={email} />
-    </div>
-  )
+  const startSpeaking = (email: string) => {
+    window.open(`/speaking/values?email=${encodeURIComponent(email)}`, '_blank');
+  };
+
+  if (!email) return <p>이메일 정보가 없습니다.</p>;
+  return <JobValueQuiz questions={questions as Question[]} email={email} onStartSpeaking={startSpeaking} />;
 }
