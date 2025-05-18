@@ -237,6 +237,7 @@ export default function MBTISpeakingSliderApp() {
           <option value="qa">최종문형</option>
           <option value="advanced">심화문형</option>
         </select>
+      </div>
       <div ref={practiceAreaRef} id="practiceArea" />
       <audio ref={audioRef} controls className={styles.audio} />
     </div>
