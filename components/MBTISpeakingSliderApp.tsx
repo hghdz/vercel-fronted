@@ -54,7 +54,6 @@ export default function MBTISpeakingSliderApp() {
   const korMap: Record<string,string> = { '外向':'외향','内向':'내향','感觉':'감각','直觉':'직관','情感':'감정','思考':'사고','判断':'판단','知觉':'인지' }
   const baseUrl = "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/"
 
-  // 컨트롤 생성
   function addControls(text: string) {
     const wrapper = document.createElement("div")
     wrapper.className = styles.buttonGroup
@@ -70,8 +69,7 @@ export default function MBTISpeakingSliderApp() {
       if (bi.type === "tts") b.classList.add(styles.listen)
       if (bi.type === "rec") b.classList.add(styles.record)
       if (bi.type === "play") b.classList.add(styles.play)
-      b.textContent = bi.label
-      if (bi.disabled) b.disabled = true
+      b.textContent = bi.label; if (bi.disabled) b.disabled = true
       b.addEventListener("click", () => {
         if (bi.type === "tts") {
           const u = new SpeechSynthesisUtterance(text)
@@ -88,15 +86,10 @@ export default function MBTISpeakingSliderApp() {
                 if (audioRef.current) audioRef.current.src = url
                 setRecorder(null)
               }
-              rec.start()
-              setRecorder(rec)
+              rec.start(); setRecorder(rec)
             })
-          } else {
-            recorder.stop()
-          }
-        } else if (bi.type === "play") {
-          audioRef.current?.play()
-        }
+          } else { recorder.stop() }
+        } else { audioRef.current?.play() }
       })
       wrapper.appendChild(b)
     })
@@ -113,70 +106,40 @@ export default function MBTISpeakingSliderApp() {
     slider.className = styles.slider
     const prevBtn = document.createElement("button")
     prevBtn.className = styles.navButton
-    prevBtn.textContent = "◀"
-    prevBtn.style.marginRight = "16px"
+    prevBtn.textContent = "◀"; prevBtn.style.marginRight = "16px"
     prevBtn.onclick = () => {
-      if (step === 1) {
-        setStep(0)
-      } else if (idx > 0) {
-        setIdx(idx - 1)
-        setStep(0)
-      }
+      if (step === 1) setStep(0)
+      else if (idx > 0) { setIdx(idx-1); setStep(0) }
     }
-    const imgBox = document.createElement("div")
-    imgBox.className = styles.imageBox
-    // Q&A 모드: 네 장, 아니면 한 장
+    const imgBox = document.createElement("div"); imgBox.className = styles.imageBox
+
     if (mode === "qa") {
       letters.forEach(c => {
-        const i = document.createElement("img")
-        i.src = baseUrl + imageMap[c]
-        i.alt = c
-        i.className = styles.halfSize
-        imgBox.appendChild(i)
+        const img = document.createElement("img"); img.src = baseUrl + imageMap[c]; img.alt = c; img.className = styles.halfSize
+        imgBox.appendChild(img)
       })
     } else {
-      // 카드 키 결정: 항상 정답 카드 사용
-      const cardKey = letters[idx]
-      const i = document.createElement("img")
-      i.src = baseUrl + imageMap[cardKey]
-      i.alt = cardKey
-      i.className = styles.img
-      imgBox.appendChild(i)
+      const key = letters[idx]
+      const img = document.createElement("img"); img.src = baseUrl + imageMap[key]; img.alt = key; img.className = styles.img
+      imgBox.appendChild(img)
     }
-      })
-    } else {
-      // 카드 키 결정: 항상 정답 카드 사용
-      const cardKey = letters[idx])
-        : letters[idx]
-      const i = document.createElement("img")
-      i.src = baseUrl + imageMap[cardKey]
-      i.alt = cardKey
-      i.className = styles.img
-      imgBox.appendChild(i)
-    }
+
     const nextBtn = document.createElement("button")
     nextBtn.className = styles.navButton
-    nextBtn.textContent = "▶"
-    nextBtn.style.marginLeft = "16px"
-    // 질문(0) → 답변(1) → 다음 질문 순으로 진행, QA 모드에서는 질문/답변만 토글
+    nextBtn.textContent = "▶"; nextBtn.style.marginLeft = "16px"
     nextBtn.onclick = () => {
-      if (step === 0) {
-        setStep(1)
-      } else {
-        if (mode !== "qa" && idx < letters.length - 1) {
-          setIdx(idx + 1)
-        }
-        setStep(0)
-      }
+      if (step === 0) setStep(1)
+      else { if (mode !== "qa" && idx < letters.length-1) setIdx(idx+1); setStep(0) }
     }
+
     slider.append(prevBtn, imgBox, nextBtn)
     area.appendChild(slider)
 
-    // 문장
+    // 문장 박스
     const box = document.createElement("div")
     box.className = styles.sentenceBox
+    const [A,B] = basicPairs[idx]
     if (mode === "basic") {
-      const [A, B] = basicPairs[idx]
       box.innerHTML = step === 0
         ? `<p>你是<span class='${styles.highlight}'>${A}</span>还是<span class='${styles.highlight}'>${B}</span>？</p><p class='pinyin'>Nǐ shì <span class='${styles.highlight}'>${A}</span> háishi <span class='${styles.highlight}'>${B}</span>?</p><p class='translation'>(너는 ${A}이니 아니면 ${B}이니?)</p>`
         : `<p>我是<span class='${styles.highlight}'>${letters[idx]}</span>。</p><p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${letters[idx]}</span>.</p><p class='translation'>(나는 ${letters[idx]}야.)</p>`
@@ -185,71 +148,44 @@ export default function MBTISpeakingSliderApp() {
         ? `<p>你的MBTI是什么？</p><p class='pinyin'>Nǐ de MBTI shì shénme?</p><p class='translation'>(너의 MBTI는 무엇이니?)</p>`
         : `<p>我的MBTI是<span class='${styles.highlight}'>${resultType}</span>。</p><p class='pinyin'>Wǒ de MBTI shì <span class='${styles.highlight}'>${resultType}</span>.</p><p class='translation'>(나의 MBTI는 ${resultType}야.)</p>`
     } else {
-      const [C1, C2] = fullMap[letters[idx]]
+      const [C1,C2] = fullMap[letters[idx]]
       box.innerHTML = step === 0
         ? `<p>你是<span class='${styles.highlight}'>${C1}</span>型还是<span class='${styles.highlight}'>${C2}</span>型？</p><p class='pinyin'>Nǐ shì <span class='${styles.highlight}'>${pinyinMap[C1]}</span> xíng háishi <span class='${styles.highlight}'>${pinyinMap[C2]}</span> xíng?</p><p class='translation'>(너는 ${korMap[C1]}형이니 아니면 ${korMap[C2]}형이니?)</p>`
         : `<p>我是<span class='${styles.highlight}'>${C1}</span>型。</p><p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${pinyinMap[C1]}</span> xíng.</p><p class='translation'>(나는 ${korMap[C1]}형이야.)</p>`
     }
     area.appendChild(box)
-
-    // 컨트롤
     addControls(
       step === 0
-        ? (mode === "basic"
-            ? `你是${basicPairs[idx][0]}还是${basicPairs[idx][1]}?`
-            : mode === "qa"
-            ? "你的MBTI是什么?"
-            : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)
-        : (mode === "basic"
-            ? `我是${letters[idx]}`
-            : mode === "qa"
-            ? `我的MBTI是${resultType}`
-            : `我是${fullMap[letters[idx]][0]}型`)
+        ? (mode === "basic" ? `你是${A}还是${B}?` : mode === "qa" ? "你的MBTI是什么?" : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)
+        : (mode === "basic" ? `我是${letters[idx]}` : mode === "qa" ? `我的MBTI是${resultType}` : `我是${fullMap[letters[idx]][0]}型`)
     )
-
-    // 오디오 엘리먼트 동적 생성 제거
-    // audio element는 JSX 하단에 위치하므로 생성하지 않습니다.
   }, [mode, idx, step, resultType])
 
-  if (!user)
-    return (
-      <div className={styles.wrapper}>
-        <h2>🔒 로그인 필요</h2>
-        <button onClick={() => signInWithPopup(auth, provider)} className={styles.loginButton}>
-          Google 로그인
-        </button>
-      </div>
-    )
+  if (!user) return (
+    <div className={styles.wrapper}>
+      <h2>🔒 로그인 필요</h2>
+      <button onClick={() => signInWithPopup(auth, provider)} className={styles.loginButton}>
+        Google 로그인
+      </button>
+    </div>
+  )
   if (!resultType) return <div className={styles.wrapper}>로딩...</div>
 
   return (
     <div className={styles.wrapper}>
       <header className={styles.header}>
         <h1 className={styles.pageTitle}>MBTI 말하기 연습</h1>
-        <Link href="/">
-          <a className={styles.homeButton}>M.E.N.G</a>
-        </Link>
-        <button onClick={() => signOut(auth)} className={styles.logoutButton}>
-          🚪 로그아웃
-        </button>
+        <Link href="/"><a className={styles.homeButton}>M.E.N.G</a></Link>
+        <button onClick={() => signOut(auth)} className={styles.logoutButton}>🚪 로그아웃</button>
       </header>
-
       <div className={styles.dropdown}>
-        <select
-          value={mode}
-          onChange={e => {
-            setMode(e.target.value as Mode)
-            setIdx(0)
-            setStep(0)
-          }}
-        >
+        <select value={mode} onChange={e => { setMode(e.target.value as Mode); setIdx(0); setStep(0) }}>
           <option value="basic">기본문형</option>
           <option value="qa">최종문형</option>
           <option value="advanced">심화문형</option>
         </select>
       </div>
       <div ref={practiceAreaRef} id="practiceArea" />
-      {/* 오디오 플레이어: 질문/답변 아래에 고정 배치 */}
       <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
