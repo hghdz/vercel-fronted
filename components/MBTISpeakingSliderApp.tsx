@@ -11,7 +11,7 @@ import {
   signOut,
   User,
 } from "firebase/auth"
-import styles from "../styles/StrengthsSliderApp.module.css"
+import styles from "../styles/SpeakingSliderApp.module.css"
 
 // Firebase 초기화
 const firebaseConfig = {
