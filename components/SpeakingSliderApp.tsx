@@ -194,7 +194,7 @@ export default function SpeakingSliderApp() {
         </Link>
 
         {/* 가운데: 제목 */}
-        <h1 className={styles.pageTitle}>맞춤형 말하기 연습</h1>
+        <h1 className={styles.pageTitle}>✨강점 말하기 연습✨</h1>
 
         {/* 오른쪽: 로그아웃 */}
         <button

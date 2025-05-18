@@ -196,7 +196,7 @@ export default function MBTISpeakingSliderApp() {
   return (
     <div className={styles.wrapper}>
       <header className={styles.header}>
-        <h1 className={styles.pageTitle}>MBTI 말하기 연습</h1>
+        <h1 className={styles.pageTitle}>🎤MBTI 말하기 연습🎤</h1>
         <Link href="/"><a className={styles.homeButton}>M.E.N.G</a></Link>
         <button onClick={() => signOut(auth)} className={styles.logoutButton}>🚪 로그아웃</button>
       </header>
