@@ -50,7 +50,7 @@ export default function MBTISpeakingSliderApp() {
   // Data mappings
   const letters = useMemo(() => resultType?.split('') || [], [resultType])
   const basicPairs = [['E','I'],['S','N'],['F','T'],['J','P']]
-  const imageMap = { E:'外向.png', I:'内向.png', S:'感觉.png', N:'直觉.png', F:'情感.png', T:'思考.png', J:'判断.png', P:'知觉.png' }
+  const imageMap: Record<string,string> = { E:'外向.png', I:'内向.png', S:'感觉.png', N:'直觉.png', F:'情感.png', T:'思考.png', J:'判断.png', P:'知觉.png' }
   const fullMap: Record<string,[string,string]> = {
     E:['外向','内向'], I:['内向','外向'],
     S:['感觉','直觉'], N:['直觉','感觉'],
