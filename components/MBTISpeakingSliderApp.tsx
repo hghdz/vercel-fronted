@@ -94,103 +94,122 @@ export default function MBTISpeakingSliderApp() {
   const baseUrl =
     "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/"
 
-  // Recorder helper
-  function attachRecorder(btn: HTMLButtonElement) {
-    btn.onclick = () => {
-      if (!recorder) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-          const r = new MediaRecorder(stream)
-          const chunks: BlobPart[] = []
-          r.ondataavailable = e => chunks.push(e.data)
-          r.onstop = () => {
-            const url = URL.createObjectURL(new Blob(chunks, { type: "audio/webm" }))
-            if (audioRef.current) audioRef.current.src = url
-            setRecorder(null)
-          }
-          r.start()
-          setRecorder(r)
-        })
-      } else {
-        recorder.stop()
-      }
-    }
-  }
-
-  // Controls: TTS, record, play
+  // Controls: 생성 및 이벤트 바인딩
   function addControls(text: string) {
     const ctrl = document.createElement("div")
-    ctrl.id = "controls"
-    ;(["ttsBtn", "recBtn", "playBtn"] as const).forEach(id => {
+    ctrl.className = styles.controls
+
+    const btnInfo = [
+      { type: "tts", label: "🔊 듣기" },
+      { type: "rec", label: "⏺️ 녹음" },
+      { type: "play", label: "▶️ 재생", disabled: true },
+    ] as const
+
+    btnInfo.forEach(({ type, label, disabled }) => {
       const b = document.createElement("button")
-      b.id = id
-      b.textContent =
-        id === "ttsBtn" ? "🔊 듣기" : id === "recBtn" ? "⏺️ 녹음" : "▶️ 재생"
-      if (id === "playBtn") b.disabled = true
+      b.className = styles.controlBtn
+      b.textContent = label
+      if (disabled) b.disabled = true
+
+      if (type === "tts") {
+        b.addEventListener("click", () => {
+          const u = new SpeechSynthesisUtterance(text)
+          u.lang = "zh-CN"
+          u.rate = 0.7
+          speechSynthesis.speak(u)
+        })
+      }
+      if (type === "rec") {
+        b.addEventListener("click", () => {
+          if (!recorder) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+              const r = new MediaRecorder(stream)
+              const chunks: BlobPart[] = []
+              r.ondataavailable = e => chunks.push(e.data)
+              r.onstop = () => {
+                const url = URL.createObjectURL(
+                  new Blob(chunks, { type: "audio/webm" })
+                )
+                if (audioRef.current) audioRef.current.src = url
+                setRecorder(null)
+              }
+              r.start()
+              setRecorder(r)
+            })
+          } else {
+            recorder.stop()
+          }
+        })
+      }
+      if (type === "play") {
+        b.addEventListener("click", () => {
+          audioRef.current?.play()
+        })
+      }
+
       ctrl.appendChild(b)
     })
+
     practiceAreaRef.current?.appendChild(ctrl)
-    document.getElementById("ttsBtn")?.addEventListener("click", () => {
-      const u = new SpeechSynthesisUtterance(text)
-      u.lang = "zh-CN"
-      u.rate = 0.7
-      speechSynthesis.speak(u)
-    })
-    attachRecorder(document.getElementById("recBtn") as HTMLButtonElement)
-    document
-      .getElementById("playBtn")
-      ?.addEventListener("click", () => audioRef.current?.play())
   }
 
-  // Render practice
+  // Render practice area
   useEffect(() => {
     if (!resultType) return
     const area = practiceAreaRef.current!
     area.innerHTML = ""
+    setStep(prev => prev) // ensure dependency
 
-    // 좌/우 네비 버튼 + 이미지 박스
+    // Slider
     const slider = document.createElement("div")
     slider.className = styles.slider
-    const prev = document.createElement("button")
-    prev.className = styles.navButton
-    prev.textContent = "◀"
-    prev.onclick = () => setIdx(i => Math.max(0, i - 1))
-    const box = document.createElement("div")
-    box.className = styles.imageBox
+    const prevBtn = document.createElement("button")
+    prevBtn.className = styles.navButton
+    prevBtn.textContent = "◀"
+    prevBtn.onclick = () => {
+      setIdx(i => Math.max(0, i - 1))
+      setStep(0)
+    }
+    const imgBox = document.createElement("div")
+    imgBox.className = styles.imageBox
     const img = document.createElement("img")
     img.className = styles.img
     img.src = baseUrl + imageMap[letters[idx]]
     img.alt = letters[idx]
-    box.appendChild(img)
-    const next = document.createElement("button")
-    next.className = styles.navButton
-    next.textContent = "▶"
-    next.onclick = () => setIdx(i => Math.min(letters.length - 1, i + 1))
-    slider.append(prev, box, next)
+    imgBox.appendChild(img)
+    const nextBtn = document.createElement("button")
+    nextBtn.className = styles.navButton
+    nextBtn.textContent = "▶"
+    nextBtn.onclick = () => {
+      setIdx(i => Math.min(letters.length - 1, i + 1))
+      setStep(0)
+    }
+    slider.append(prevBtn, imgBox, nextBtn)
     area.appendChild(slider)
 
-    // 문형 + 컨트롤
+    // Sentence wrapper
     const w = document.createElement("div")
-    w.className = "wrapper"
+    w.className = styles.sentenceBox
     area.appendChild(w)
 
+    // Mode별 문장 및 컨트롤
     if (mode === "basic") {
       if (idx < basicPairs.length) {
         const [A, B] = basicPairs[idx]
         if (step === 0) {
           w.innerHTML = `
-            <p>你是<span class='highlight'>${A}</span>还是<span class='highlight'>${B}</span>？</p>
-            <p class='pinyin'>Nǐ shì <span class='highlight'>${A}</span> háishi <span class='highlight'>${B}</span>?</p>
+            <p>你是<span class='${styles.highlight}'>${A}</span>还是<span class='${styles.highlight}'>${B}</span>？</p>
+            <p class='pinyin'>Nǐ shì <span class='${styles.highlight}'>${A}</span> háishi <span class='${styles.highlight}'>${B}</span>?</p>
             <p class='translation'>(너는 ${A}이니 아니면 ${B}이니?)</p>`
           addControls(`你是${A}还是${B}?`)
         } else {
           w.innerHTML = `
-            <p>我是<span class='highlight'>${A}</span>。</p>
-            <p class='pinyin'>Wǒ shì <span class='highlight'>${A}</span>.</p>
+            <p>我是<span class='${styles.highlight}'>${A}</span>。</p>
+            <p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${A}</span>.</p>
             <p class='translation'>(나는 ${A}야.)</p>`
           addControls(`我是${A}`)
         }
       } else {
-        // Q&A 마지막
         if (step === 0) {
           w.innerHTML = `
             <p>你的MBTI是什么？</p>
@@ -199,14 +218,13 @@ export default function MBTISpeakingSliderApp() {
           addControls("你的MBTI是什么?")
         } else {
           w.innerHTML = `
-            <p>我的MBTI是<span class='highlight'>${resultType}</span>。</p>
-            <p class='pinyin'>Wǒ de MBTI shì <span class='highlight'>${resultType}</span>.</p>
+            <p>我的MBTI是<span class='${styles.highlight}'>${resultType}</span>。</p>
+            <p class='pinyin'>Wǒ de MBTI shì <span class='${styles.highlight}'>${resultType}</span>.</p>
             <p class='translation'>(나의 MBTI는 ${resultType}야.)</p>`
           addControls(`我的MBTI是${resultType}`)
         }
       }
     } else {
-      // advanced 모드 (App Script 원본 그대로)
       const [chiA, chiB] = fullMap[letters[idx]]
       const pinA = pinyinMap[chiA],
         pinB = pinyinMap[chiB]
@@ -214,14 +232,14 @@ export default function MBTISpeakingSliderApp() {
         korB = korMap[chiB]
       if (step === 0) {
         w.innerHTML = `
-          <p>你是<span class='highlight'>${chiA}</span>型还是<span class='highlight'>${chiB}</span>型？</p>
-          <p class='pinyin'>Nǐ shì <span class='highlight'>${pinA}</span> xíng háishi <span class='highlight'>${pinB}</span> xíng?</p>
+          <p>你是<span class='${styles.highlight}'>${chiA}</span>型还是<span class='${styles.highlight}'>${chiB}</span>型？</p>
+          <p class='pinyin'>Nǐ shì <span class='${styles.highlight}'>${pinA}</span> xíng háishi <span class='${styles.highlight}'>${pinB}</span> xíng?</p>
           <p class='translation'>(너는 ${korA}형이니 아니면 ${korB}형이니?)</p>`
         addControls(`你是${chiA}型还是${chiB}型?`)
       } else {
         w.innerHTML = `
-          <p>我是<span class='highlight'>${chiA}</span>型。</p>
-          <p class='pinyin'>Wǒ shì <span class='highlight'>${pinA}</span> xíng.</p>
+          <p>我是<span class='${styles.highlight}'>${chiA}</span>型。</p>
+          <p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${pinA}</span> xíng.</p>
           <p class='translation'>(나는 ${korA}형이야.)</p>`
         addControls(`我是${chiA}型`)
       }
@@ -229,7 +247,7 @@ export default function MBTISpeakingSliderApp() {
   }, [mode, idx, step, resultType])
 
   // 렌더링
- if (!user)
+  if (!user)
     return (
       <div className={styles.wrapper}>
         <h2>🔒 로그인 필요</h2>
@@ -250,10 +268,7 @@ export default function MBTISpeakingSliderApp() {
           <a className={styles.homeButton}>M.E.N.G</a>
         </Link>
         <h1 className={styles.pageTitle}>MBTI 말하기 연습</h1>
-        <button
-          onClick={() => signOut(auth)}
-          className={styles.logoutButton}
-        >
+        <button onClick={() => signOut(auth)} className={styles.logoutButton}>
           🚪 로그아웃
         </button>
       </header>
@@ -268,13 +283,12 @@ export default function MBTISpeakingSliderApp() {
             setStep(0)
           }}
         >
-          {/* 옵션 텍스트를 “기본문형” 하나로만 */}
           <option value="basic">기본문형</option>
           <option value="advanced">심화문형</option>
         </select>
       </div>
 
-      <div ref={practiceAreaRef} id="practiceArea" />
+      <div ref={practiceAreaRef} />
       <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
