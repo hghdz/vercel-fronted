@@ -1,7 +1,7 @@
 // data/questions.ts
-export default [
-            {
-                image: "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/values/1.png",
+import { Question } from '../components/JobValueQuiz'  // 타입이 필요하면
+const questions: Question[] = [
+                {image: "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/values/1.png",
                 textA: "능력발휘",
                 descA: "실력 발휘해서 뿜뿜",
                 textB: "보수",
@@ -196,4 +196,5 @@ export default [
                 textB: "자율성",
                 descB: "순서도 방식도 다 내맘대로 하는 일",
             },
-        ]
+        ];
+export default questions;
