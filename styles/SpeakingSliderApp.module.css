@@ -1,8 +1,11 @@
 .wrapper {
-  /* 기존 wrapper 스타일 유지 */
   position: relative;
-  padding-top: 120px; /* 헤더 공간 확보 */
+  padding-top: 120px;  /* 그대로 두고 */
+  display: flex;              /* 추가 */
+  flex-direction: column;     /* 추가 */
+  align-items: center;        /* 추가: 가로 중앙 정렬 */
 }
+
 
 /* 헤더 영역 */
 .header {
