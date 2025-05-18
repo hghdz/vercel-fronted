@@ -97,10 +97,14 @@
 .play { background-color: #a78bfa; }
 .play:hover { background-color: #8b5cf6; }
 
-/* Audio */
+
+/* 오디오 플레이어 위치 조정 */
 .audio {
-  margin-top: 1rem; width: 300px;
+  margin: 24px auto 0;  /* 위에 24px 간격 주고 좌우 중앙 정렬 */
+  display: block;       /* inline → block 으로 바꿔서 auto 마진이 작동하도록 */
 }
+
+
 /* 구글 로그인 버튼 원래 디자인 */
 .loginButton {
   margin-top: 16px;
