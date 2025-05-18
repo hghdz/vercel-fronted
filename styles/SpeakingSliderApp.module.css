@@ -99,7 +99,6 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border: none;
 }
 
 /* Practice container centering */
@@ -132,11 +131,11 @@
 
 /* Dropdown selector styling */
 .dropdown {
-  margin-top: 100px;
-  margin-bottom: 16px;
+  margin: 100px 0 16px;
 }
 .dropdown select {
   padding: 8px 12px;
+  padding-right: 36px; /* 화살표 여백 확보 */
   border-radius: 12px;
   border: 2px solid #fdd835; /* 레몬 옐로 테두리 */
   background-color: #fffde7; /* 연노랑 배경 */
@@ -152,42 +151,63 @@
   border-color: #fbc02d;
 }
 
-/* Audio element styling (optional) */
+/* Audio element styling */
 .audio {
   margin-top: 16px;
 }
 
-/* 컨트롤 박스 전체 */
+/* Controls wrapper */
 .controls {
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 1rem;
+  margin-bottom: 8px;
 }
 
-/* 듣기/녹음/재생 버튼 */
+/* 직사각형 버튼 스타일 */
 .controlBtn {
-  width: 48px;
-  height: 48px;
+  width: 64px;        /* 요청에 맞춘 가로 크기 */
+  height: 30px;       /* 요청에 맞춘 세로 크기 */
   border: none;
-  border-radius: 50%;
-  background: #ffe082;
-  color: #bf360c;
-  font-size: 1.4rem;
+  border-radius: 8px; /* 살짝 둥근 모서리 */
+  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.1s, background 0.2s, box-shadow 0.1s;
+  transition: transform .1s, box-shadow .1s;
 }
+/* 버튼별 배경색 */
+.ttsBtn { background: #81d4fa; color: #01579b; }
+.recBtn { background: #ff8a65; color: #bf360c; }
+.playBtn { background: #a5d6a7; color: #1b5e20; }
+/* hover/active 효과 */
 .controlBtn:hover {
-  transform: scale(1.1);
-  background: #ffd54f;
+  transform: translateY(-2px);
 }
 .controlBtn:active {
   transform: translateY(2px);
-  background: #ffca28;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* “다음” 버튼 */
+.nextBtn {
+  margin-left: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #ffd54f;
+  color: #bf360c;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.nextBtn:hover {
+  background: #ffca28;
+  transform: scale(1.05);
+}
+.nextBtn:active {
+  transform: translateY(1px);
 }
 
 /* Half-size images for final Q&A */
