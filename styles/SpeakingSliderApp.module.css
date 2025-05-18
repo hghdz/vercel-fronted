@@ -149,3 +149,33 @@
 .practice-btn {
   display: none;
 }
+/* 전역 ID 셀렉터로 컨트롤 스타일 적용 */
+:global(#controls) {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 1rem;
+}
+:global(#controls button) {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: #ffe082;
+  color: #bf360c;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .1s, background .2s, box-shadow .1s;
+}
+:global(#controls button:hover) {
+  transform: scale(1.1);
+  background: #ffd54f;
+}
+:global(#controls button:active) {
+  transform: translateY(2px);
+  background: #ffca28;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
