@@ -1,6 +1,6 @@
 /* styles/MBTISpeaking.module.css */
 
-/* 전체 래퍼 */
+/* Wrapper & Header (기존 MBTI 레이아웃) */
 .wrapper {
   position: relative;
   padding-top: 120px;
@@ -9,8 +9,6 @@
   align-items: center;
   width: 100%;
 }
-
-/* 헤더 */
 .header {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 80px;
@@ -18,12 +16,14 @@
   padding: 0 24px; background: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;
 }
-.homeButton, .logoutButton {
-  font-size: 16px; color: #333;
-}
+.homeButton { font-size: 20px; font-weight: bold; color: #333; text-decoration: none; }
 .pageTitle {
   position: absolute; left: 50%; transform: translateX(-50%);
   font-size: 18px; font-weight: 500;
+}
+.logoutButton {
+  background: transparent; border: none; font-size: 16px;
+  cursor: pointer; color: #333;
 }
 
 /* 드롭다운 */
@@ -31,113 +31,89 @@
   margin: 100px 0 16px;
 }
 .dropdown select {
-  padding: 8px 12px;
+  padding: 8px 12px 8px 12px;
   padding-right: 36px;
-  border-radius: 12px;
-  border: 2px solid #fdd835;
-  background: #fffde7;
-  font-size: 1rem;
-  cursor: pointer;
+  border-radius: 12px; border: 2px solid #fdd835;
+  background: #fffde7; font-size: 1rem; cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='12' height='8' xmlns='http://www.w3.org/2000/svg'><path d='M1 1l5 5 5-5' stroke='%23bf360c' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
+  background-repeat: no-repeat; background-position: right 10px center;
 }
-.dropdown select:focus {
-  outline: none;
-  border-color: #fbc02d;
-}
+.dropdown select:focus { outline: none; border-color: #fbc02d; }
 
-/* 슬라이더 영역 */
+/* Slider & Image */
 .slider {
   display: flex; align-items: center; justify-content: center;
-  margin: 2rem 0;
+  margin: 2rem 0; gap: 1rem;
 }
 .navButton {
-  width: 48px; height: 48px;
-  border: none; border-radius: 50%;
-  background: #dbeafe; color: #4338ca;
-  font-size: 1.5rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform .1s, background .2s;
+  font-size: 2rem; background: #e0e7ff; border: none;
+  padding: .2rem .6rem; border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  cursor: pointer; transition: transform .1s ease;
 }
-.navButton:hover {
-  background: #c7d2fe; transform: scale(1.1);
-}
+.navButton:hover { transform: scale(1.2); background: #c7d2fe; }
 
-/* 이미지 박스 */
 .imageBox {
   width: 250px; height: 320px;
-  border-radius: 10px; overflow: hidden;
-  background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: white; border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   display: flex; align-items: center; justify-content: center;
 }
-.img {
-  width: 100%; height: 100%; object-fit: contain;
-}
-
-/* 연습 영역 */
-.practiceArea {
-  display: flex; flex-direction: column;
-  align-items: center; width: 100%;
-}
+.img { width: 100%; height: 100%; object-fit: contain; }
 
 /* 문장 박스 */
 .sentenceBox {
-  background: #fff9c4;
-  padding: 20px 5%;
-  border-radius: 12px;
-  text-align: center;
+  background: #f3e8ff; padding: 20px 5%;
+  border-radius: 12px; text-align: center;
   width: 100%; max-width: 500px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   margin-bottom: 1rem;
 }
-.sentenceBox p {
-  margin: .5rem 0; text-align: center;
+.sentenceBox p { margin: .5rem 0; }
+.sentenceBox p span.highlight { color: red; font-weight: bold; }
+
+/* 컨트롤 버튼 그룹 (강점 연습에서 가져옴) */
+.buttonGroup {
+  display: flex; justify-content: center; gap: 1rem;
+  margin-top: 1.5rem;
 }
-.sentenceBox p span.highlight {
-  color: red; font-weight: bold;
+.button {
+  padding: 0.6rem 1.2rem; font-size: 1rem;
+  border: none; border-radius: 12px; cursor: pointer;
+  color: white; transition: background-color .2s ease;
+}
+/* 듣기 */
+.listen {
+  background-color: #3b82f6;
+}
+.listen:hover {
+  background-color: #2563eb;
+}
+/* 녹음 */
+.record {
+  background-color: #10b981;
+}
+.record:hover {
+  background-color: #059669;
+}
+/* 녹음 중지(또는 Stop) */
+.stop {
+  background-color: #f87171;
+}
+.stop:hover {
+  background-color: #ef4444;
+}
+/* 재생 */
+.play {
+  background-color: #a78bfa;
+}
+.play:hover {
+  background-color: #8b5cf6;
 }
 
-/* 컨트롤 버튼 래퍼 */
-.controls {
-  display: flex; justify-content: center;
-  gap: 16px; margin-bottom: 8px;
-}
-
-/* 직사각형 버튼 (64×30) */
-.controlBtn {
-  width: 64px; height: 30px;
-  border: none; border-radius: 8px;
-  font-size: 1rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform .1s, box-shadow .1s;
-}
-.controlBtn:hover {
-  transform: translateY(-2px);
-}
-.controlBtn:active {
-  transform: translateY(2px);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* 버튼별 색상 */
-.ttsBtn { background: #81d4fa; color: #01579b; }
-.recBtn { background: #ff8a65; color: #bf360c; }
-.playBtn { background: #a5d6a7; color: #1b5e20; }
-
-/* 다음 버튼 */
-.nextBtn {
-  margin-left: 8px;
-  padding: 6px 12px;
-  border: none; border-radius: 8px;
-  background: #ffd54f; color: #bf360c;
-  font-size: .9rem; cursor: pointer;
-  transition: background .2s, transform .1s;
-}
-.nextBtn:hover {
-  background: #ffca28; transform: scale(1.05);
-}
-.nextBtn:active {
-  transform: translateY(1px);
+/* Audio Element */
+.audio {
+  margin-top: 1rem;
+  width: 300px;
 }
