@@ -17,7 +17,4 @@ export default function SpeakingValuesPage() {
   return (
     <div style={{ padding: 24 }}>
       <h1>가치관 말하기 연습</h1>
-      <ValuesSpeakingSliderApp email={email} />
-    </div>
-  )
-}
+      <ValuesSpeakingSliderApp />
