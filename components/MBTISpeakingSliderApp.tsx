@@ -69,7 +69,8 @@ export default function MBTISpeakingSliderApp() {
       if (bi.type === "tts") b.classList.add(styles.listen)
       if (bi.type === "rec") b.classList.add(styles.record)
       if (bi.type === "play") b.classList.add(styles.play)
-      b.textContent = bi.label; if (bi.disabled) b.disabled = true
+      b.textContent = bi.label
+      if (bi.disabled) b.disabled = true
       b.addEventListener("click", () => {
         if (bi.type === "tts") {
           const u = new SpeechSynthesisUtterance(text)
@@ -101,69 +102,63 @@ export default function MBTISpeakingSliderApp() {
     const area = practiceAreaRef.current!
     area.innerHTML = ""
 
-    // 네비 버튼 + 이미지
+    // 네비게이션 + 이미지
     const slider = document.createElement("div")
     slider.className = styles.slider
     const prevBtn = document.createElement("button")
     prevBtn.className = styles.navButton
-    prevBtn.textContent = "◀"; prevBtn.style.marginRight = "16px"
+    prevBtn.textContent = "◀"
+    prevBtn.style.marginRight = "16px"
     prevBtn.onclick = () => {
       if (step === 1) setStep(0)
-      else if (idx > 0) { setIdx(idx-1); setStep(0) }
+      else if (idx > 0) { setIdx(idx - 1); setStep(0) }
     }
-    const imgBox = document.createElement("div");
-    // QA 모드일 때는 이미지 박스 너비 자동, flex-wrap 허용
-    imgBox.className = styles.imageBox;
+    const imgBox = document.createElement("div")
+    imgBox.className = styles.imageBox
     if (mode === "qa") {
-      imgBox.style.width = "auto";
-      imgBox.style.display = "flex";
-      imgBox.style.flexWrap = "nowrap";
-      imgBox.style.justifyContent = "center";
-      imgBox.style.gap = "8px";
-    }
-
-    if (mode === "qa") {
+      imgBox.style.width = "auto"
+      imgBox.style.display = "flex"
+      imgBox.style.justifyContent = "center"
+      imgBox.style.gap = "8px"
       letters.forEach(c => {
-        const img = document.createElement("img"); img.src = baseUrl + imageMap[c]; img.alt = c; img.className = styles.halfSize
+        const img = document.createElement("img")
+        img.src = baseUrl + imageMap[c]
+        img.alt = c
+        img.className = styles.halfSize
         imgBox.appendChild(img)
       })
     } else {
       const key = letters[idx]
-      const img = document.createElement("img"); img.src = baseUrl + imageMap[key]; img.alt = key; img.className = styles.img
+      const img = document.createElement("img")
+      img.src = baseUrl + imageMap[key]
+      img.alt = key
+      img.className = styles.img
       imgBox.appendChild(img)
     }
 
     const nextBtn = document.createElement("button")
     nextBtn.className = styles.navButton
-    $1
-    // 마지막 문장 후에는 비활성화
-    const lastIndex = letters.length - 1;
-    if (idx === lastIndex && step === 1) nextBtn.disabled = true;
+    nextBtn.textContent = "▶"
+    nextBtn.style.marginLeft = "16px"
     nextBtn.onclick = () => {
       if (step === 0) {
         setStep(1)
       } else {
         if (mode !== "qa") {
-          if (idx < letters.length - 1) {
-            setIdx(idx + 1)
-          } else {
-            // 마지막 뒤에는 처음으로
-            setIdx(0)
-          }
+          if (idx < letters.length - 1) setIdx(idx + 1)
+          else setIdx(0)
         }
         setStep(0)
       }
     }
-    }
-
     slider.append(prevBtn, imgBox, nextBtn)
     area.appendChild(slider)
 
     // 문장 박스
     const box = document.createElement("div")
     box.className = styles.sentenceBox
-    const [A,B] = basicPairs[idx]
     if (mode === "basic") {
+      const [A, B] = basicPairs[idx]
       box.innerHTML = step === 0
         ? `<p>你是<span class='${styles.highlight}'>${A}</span>还是<span class='${styles.highlight}'>${B}</span>？</p><p class='pinyin'>Nǐ shì <span class='${styles.highlight}'>${A}</span> háishi <span class='${styles.highlight}'>${B}</span>?</p><p class='translation'>(너는 ${A}이니 아니면 ${B}이니?)</p>`
         : `<p>我是<span class='${styles.highlight}'>${letters[idx]}</span>。</p><p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${letters[idx]}</span>.</p><p class='translation'>(나는 ${letters[idx]}야.)</p>`
@@ -172,7 +167,7 @@ export default function MBTISpeakingSliderApp() {
         ? `<p>你的MBTI是什么？</p><p class='pinyin'>Nǐ de MBTI shì shénme?</p><p class='translation'>(너의 MBTI는 무엇이니?)</p>`
         : `<p>我的MBTI是<span class='${styles.highlight}'>${resultType}</span>。</p><p class='pinyin'>Wǒ de MBTI shì <span class='${styles.highlight}'>${resultType}</span>.</p><p class='translation'>(나의 MBTI는 ${resultType}야.)</p>`
     } else {
-      const [C1,C2] = fullMap[letters[idx]]
+      const [C1, C2] = fullMap[letters[idx]]
       box.innerHTML = step === 0
         ? `<p>你是<span class='${styles.highlight}'>${C1}</span>型还是<span class='${styles.highlight}'>${C2}</span>型？</p><p class='pinyin'>Nǐ shì <span class='${styles.highlight}'>${pinyinMap[C1]}</span> xíng háishi <span class='${styles.highlight}'>${pinyinMap[C2]}</span> xíng?</p><p class='translation'>(너는 ${korMap[C1]}형이니 아니면 ${korMap[C2]}형이니?)</p>`
         : `<p>我是<span class='${styles.highlight}'>${C1}</span>型。</p><p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${pinyinMap[C1]}</span> xíng.</p><p class='translation'>(나는 ${korMap[C1]}형이야.)</p>`
@@ -180,9 +175,10 @@ export default function MBTISpeakingSliderApp() {
     area.appendChild(box)
     addControls(
       step === 0
-        ? (mode === "basic" ? `你是${A}还是${B}?` : mode === "qa" ? "你的MBTI是什么?" : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)
+        ? (mode === "basic" ? `你是${basicPairs[idx][0]}还是${basicPairs[idx][1]}?` : mode === "qa" ? "你的MBTI是什么?" : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)
         : (mode === "basic" ? `我是${letters[idx]}` : mode === "qa" ? `我的MBTI是${resultType}` : `我是${fullMap[letters[idx]][0]}型`)
     )
+
   }, [mode, idx, step, resultType])
 
   if (!user) return (
