@@ -12,7 +12,8 @@ import {
   signOut,
   User,
 } from "firebase/auth"
-import styles from "../styles/SpeakingSliderApp.module.css"
+import styles from "../styles/MBTISpeaking.module.css"
+
 
 // Firebase init
 initializeApp({
