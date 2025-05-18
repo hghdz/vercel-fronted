@@ -99,11 +99,16 @@ export default function MBTISpeakingSliderApp() {
     const ctrl = document.createElement("div")
     ctrl.className = styles.controls
 
-    const btnInfo = [
+    // disabled?: boolean 허용
+    const btnInfo: Array<{
+      type: "tts" | "rec" | "play"
+      label: string
+      disabled?: boolean
+    }> = [
       { type: "tts", label: "🔊 듣기" },
       { type: "rec", label: "⏺️ 녹음" },
       { type: "play", label: "▶️ 재생", disabled: true },
-    ] as const
+    ]
 
     btnInfo.forEach(({ type, label, disabled }) => {
       const b = document.createElement("button")
@@ -158,7 +163,7 @@ export default function MBTISpeakingSliderApp() {
     if (!resultType) return
     const area = practiceAreaRef.current!
     area.innerHTML = ""
-    setStep(prev => prev) // ensure dependency
+    setStep(prev => prev) // 강제 의존성 트리거
 
     // Slider
     const slider = document.createElement("div")
