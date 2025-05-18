@@ -1,0 +1,161 @@
+/* styles/ValuesSpeaking.module.css */
+
+/* Wrapper & Header */
+.wrapper {
+  position: relative;
+  padding-top: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+.homeButton {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+}
+.pageTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 500;
+}
+.logoutButton {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #333;
+}
+
+/* Slider & Image */
+.slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+  gap: 32px;
+}
+.navButton {
+  font-size: 2rem;
+  background-color: #d9f99d;
+  border: none;
+  padding: .2rem .6rem;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform .1s ease;
+}
+.navButton:hover {
+  transform: scale(1.2);
+  background-color: #bef264;
+}
+.image {
+  width: 250px;
+  height: 320px;
+  object-fit: contain;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Sentence Box */
+.sentenceBox {
+  background-color: #dcfce7;
+  padding: 20px 5%;
+  border-radius: 12px;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+}
+.sentenceBox p {
+  margin: .5rem 0;
+}
+.sentenceBox p span.highlight {
+  color: red;
+  font-weight: bold;
+}
+
+/* Controls */
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.button {
+  padding: .6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+  transition: background-color .2s ease;
+}
+.listen {
+  background-color: #3b82f6;
+}
+.listen:hover {
+  background-color: #2563eb;
+}
+.record {
+  background-color: #10b981;
+}
+.record:hover {
+  background-color: #059669;
+}
+.play {
+  background-color: #a78bfa;
+}
+.play:hover {
+  background-color: #8b5cf6;
+}
+
+/* Text styling */
+.pinyin {
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+.translation {
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+/* Audio Player */
+.audio {
+  margin: 24px auto 0;
+  display: block;
+}
+
+/* Google Login Button */
+.loginButton {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.loginButton:hover {
+  background: #3367d6;
+}
