@@ -133,8 +133,8 @@ export default function MBTISpeakingSliderApp() {
         imgBox.appendChild(i)
       })
     } else {
-      const cardKey = step === 0
-        ? (mode === "basic" ? basicPairs[idx][0] : letters[idx])
+      // 카드 키 결정: 항상 정답 카드 사용
+      const cardKey = letters[idx])
         : letters[idx]
       const i = document.createElement("img")
       i.src = baseUrl + imageMap[cardKey]
@@ -146,6 +146,7 @@ export default function MBTISpeakingSliderApp() {
     nextBtn.className = styles.navButton
     nextBtn.textContent = "▶"
     nextBtn.style.marginLeft = "16px"
+    // 질문(0) → 답변(1) → 다음 질문 순으로 진행, QA 모드에서는 질문/답변만 토글
     nextBtn.onclick = () => {
       if (step === 0) {
         setStep(1)
@@ -156,7 +157,7 @@ export default function MBTISpeakingSliderApp() {
         setStep(0)
       }
     }
-    slider.append(prevBtn, imgBox, nextBtn)
+    slider.append(prevBtn, imgBox, nextBtn)(prevBtn, imgBox, nextBtn)
     area.appendChild(slider)
 
     // 문장
