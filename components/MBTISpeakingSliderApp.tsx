@@ -78,7 +78,7 @@ export default function MBTISpeakingSliderApp() {
               r.onstop = () => { const url=URL.createObjectURL(new Blob(chunks,{type:"audio/webm"})); if(audioRef.current) audioRef.current.src=url; setRecorder(null) }
               r.start(); setRecorder(r)
             })
-          } else r.stop()
+          } else recorder.stop()
         })
       }
       if (bi.type === "play") b.addEventListener("click", ()=> audioRef.current?.play())
