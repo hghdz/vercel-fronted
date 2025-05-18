@@ -1,12 +1,189 @@
-/* components/SpeakingSliderApp.module.css */
 
-.wrapper {
-  position: relative;
-  padding-top: 120px; /* 헤더 공간 확보 */
+   .wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.progressBarTrack {
+  display: flex;
   width: 100%;
+  max-width: 360px;
+  justify-content: center;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #e5e7eb;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+.progressSegment {
+  width: 80px;
+  height: 10px;
+  border-radius: 4px;
+  background-color: #e5e7eb;
+  transition: background-color 0.3s ease;
+}
+
+.imageBox {
+  width: 250px;
+  height: 320px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none; /* ✅ 보라 테두리 제거 */
+}
+
+.openActive {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.blindActive {
+  background-color: #10b981;
+  color: white;
+}
+
+.hiddenActive {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.unknownActive {
+  background-color: #ef4444;
+  color: white;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+
+.navButton {
+  font-size: 2rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50%;
+  background: #e0e7ff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease;
+}
+
+.navButton:hover {
+  transform: scale(1.2);
+  background: #c7d2fe;
+}
+
+.buttonGroup {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: white;
+}
+
+.listen {
+  background-color: #3b82f6;
+}
+.listen:hover {
+  background-color: #2563eb;
+}
+
+.record {
+  background-color: #10b981;
+}
+.record:hover {
+  background-color: #059669;
+}
+
+.stop {
+  background-color: #f87171;
+}
+.stop:hover {
+  background-color: #ef4444;
+}
+
+.play {
+  background-color: #a78bfa;
+}
+.play:hover {
+  background-color: #8b5cf6;
+}
+
+.audio {
+  margin-top: 1rem;
+  width: 300px;
+}
+
+.progressBarWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+
+.sentenceBox {
+  background-color: #f3e8ff;
+  padding: 20px 5%;
+  border-radius: 12px;
+  text-align: center;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.loginButton {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.logoutButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* components/SpeakingSliderApp.module.css */
+
+.wrapper {
+  /* 기존 wrapper 스타일 유지 */
+  position: relative;
+  padding-top: 120px; /* 헤더 공간 확보 */
 }
 
 /* 헤더 영역 */
@@ -24,11 +201,14 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
-.homeButton,
-.logoutButton {
-  font-size: 16px;
+
+.homeButton {
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
   color: #333;
 }
+
 .pageTitle {
   position: absolute;
   left: 50%;
@@ -37,186 +217,12 @@
   font-weight: 500;
 }
 
-/* Progress bar */
-.progressBarTrack {
-  display: flex;
-  width: 100%;
-  max-width: 360px;
-  height: 10px;
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: #e5e7eb;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-  margin-top: 100px;
-}
-.progressSegment {
-  flex: 1;
-  margin: 0 2px;
-  background-color: #e5e7eb;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-/* Slider with nav buttons */
-.slider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 2rem 0;
-}
-.navButton {
-  width: 48px;
-  height: 48px;
+.logoutButton {
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  background: #dbeafe; /* 연보라색 배경 */
-  color: #4338ca; /* 짙은 보라 글자 */
-  font-size: 1.5rem;
+  font-size: 16px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.1s, background 0.2s;
-}
-.navButton:hover {
-  background: #c7d2fe;
-  transform: scale(1.1);
+  color: #333;
 }
 
-/* 이미지 박스 */
-.imageBox {
-  width: 250px;
-  height: 320px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Practice container centering */
-#practiceArea {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-/* 문장 출력 영역: 중앙 정렬 + 연노랑 배경 */
-.sentenceBox {
-  background: #fff9c4; /* 연노랑 배경 */
-  padding: 20px 5%;
-  border-radius: 12px;
-  text-align: center;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1rem;
-}
-.sentenceBox p {
-  margin: 0.5rem 0;
-  text-align: center;
-}
-.sentenceBox p span.highlight {
-  color: red;
-  font-weight: bold;
-}
-
-/* Dropdown selector styling */
-.dropdown {
-  margin: 100px 0 16px;
-}
-.dropdown select {
-  padding: 8px 12px;
-  padding-right: 36px; /* 화살표 여백 확보 */
-  border-radius: 12px;
-  border: 2px solid #fdd835; /* 레몬 옐로 테두리 */
-  background-color: #fffde7; /* 연노랑 배경 */
-  font-size: 1rem;
-  cursor: pointer;
-  appearance: none; /* 기본 화살표 제거 */
-  background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='12' height='8' xmlns='http://www.w3.org/2000/svg'><path d='M1 1l5 5 5-5' stroke='%23bf360c' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
-.dropdown select:focus {
-  outline: none;
-  border-color: #fbc02d;
-}
-
-/* Audio element styling */
-.audio {
-  margin-top: 16px;
-}
-
-/* Controls wrapper */
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 8px;
-}
-
-/* 직사각형 버튼 스타일 */
-.controlBtn {
-  width: 64px;        /* 요청에 맞춘 가로 크기 */
-  height: 30px;       /* 요청에 맞춘 세로 크기 */
-  border: none;
-  border-radius: 8px; /* 살짝 둥근 모서리 */
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform .1s, box-shadow .1s;
-}
-/* 버튼별 배경색 */
-.ttsBtn { background: #81d4fa; color: #01579b; }
-.recBtn { background: #ff8a65; color: #bf360c; }
-.playBtn { background: #a5d6a7; color: #1b5e20; }
-/* hover/active 효과 */
-.controlBtn:hover {
-  transform: translateY(-2px);
-}
-.controlBtn:active {
-  transform: translateY(2px);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* “다음” 버튼 */
-.nextBtn {
-  margin-left: 8px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #ffd54f;
-  color: #bf360c;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background .2s, transform .1s;
-}
-.nextBtn:hover {
-  background: #ffca28;
-  transform: scale(1.05);
-}
-.nextBtn:active {
-  transform: translateY(1px);
-}
-
-/* Half-size images for final Q&A */
-.half-size {
-  width: 100px !important;
-  height: auto !important;
-}
-
-/* Practice next button 숨김 유지 */
-.practice-btn {
-  display: none;
-}
+/* 기존 스타일 아래에 이어서 */
