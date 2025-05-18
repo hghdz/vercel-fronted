@@ -4,9 +4,14 @@ import { MongoClient } from 'mongodb'
 let cachedClient = null
 
 export default async function handler(req, res) {
-  const { email } = req.query
-  if (!email) {
-    return res.status(400).json({ error: 'email 쿼리 누락' })
+  // 1) CORS 허용
+  res.setHeader('Access-Control-Allow-Origin', '*')               // 모든 도메인 허용
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  // 2) Preflight(CORS) 요청 처리
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
   }
 
   // 한 번만 연결
