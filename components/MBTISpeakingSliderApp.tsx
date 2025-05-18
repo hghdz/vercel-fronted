@@ -229,7 +229,7 @@ export default function MBTISpeakingSliderApp() {
   }, [mode, idx, step, resultType])
 
   // 렌더링
-  if (!user)
+ if (!user)
     return (
       <div className={styles.wrapper}>
         <h2>🔒 로그인 필요</h2>
@@ -259,7 +259,7 @@ export default function MBTISpeakingSliderApp() {
       </header>
 
       <h2>말하기 연습</h2>
-      <div className={styles.dropdownWrapper}>
+      <div className={styles.dropdown}>
         <select
           value={mode}
           onChange={e => {
@@ -268,8 +268,9 @@ export default function MBTISpeakingSliderApp() {
             setStep(0)
           }}
         >
-          <option value="basic">기본 문형 & Q&A</option>
-          <option value="advanced">심화 문형</option>
+          {/* 옵션 텍스트를 “기본문형” 하나로만 */}
+          <option value="basic">기본문형</option>
+          <option value="advanced">심화문형</option>
         </select>
       </div>
 
