@@ -1,5 +1,14 @@
-// data/questions.ts
-import { Question } from '../components/JobValueQuiz'  // 타입이 필요하면
+// src/data/questions.ts
+
+// data file for JobValueQuiz without importing component types
+export interface Question {
+  image: string
+  textA: string
+  descA: string
+  textB: string
+  descB: string
+}
+
 const questions: Question[] = [
                 {image: "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/values/1.png",
                 textA: "능력발휘",
