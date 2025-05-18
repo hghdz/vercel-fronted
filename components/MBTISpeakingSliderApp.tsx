@@ -111,7 +111,16 @@ export default function MBTISpeakingSliderApp() {
       if (step === 1) setStep(0)
       else if (idx > 0) { setIdx(idx-1); setStep(0) }
     }
-    const imgBox = document.createElement("div"); imgBox.className = styles.imageBox
+    const imgBox = document.createElement("div");
+    // QA 모드일 때는 이미지 박스 너비 자동, flex-wrap 허용
+    imgBox.className = styles.imageBox;
+    if (mode === "qa") {
+      imgBox.style.width = "auto";
+      imgBox.style.display = "flex";
+      imgBox.style.flexWrap = "nowrap";
+      imgBox.style.justifyContent = "center";
+      imgBox.style.gap = "8px";
+    }
 
     if (mode === "qa") {
       letters.forEach(c => {
@@ -126,10 +135,25 @@ export default function MBTISpeakingSliderApp() {
 
     const nextBtn = document.createElement("button")
     nextBtn.className = styles.navButton
-    nextBtn.textContent = "▶"; nextBtn.style.marginLeft = "16px"
+    $1
+    // 마지막 문장 후에는 비활성화
+    const lastIndex = letters.length - 1;
+    if (idx === lastIndex && step === 1) nextBtn.disabled = true;
     nextBtn.onclick = () => {
-      if (step === 0) setStep(1)
-      else { if (mode !== "qa" && idx < letters.length-1) setIdx(idx+1); setStep(0) }
+      if (step === 0) {
+        setStep(1)
+      } else {
+        if (mode !== "qa") {
+          if (idx < letters.length - 1) {
+            setIdx(idx + 1)
+          } else {
+            // 마지막 뒤에는 처음으로
+            setIdx(0)
+          }
+        }
+        setStep(0)
+      }
+    }
     }
 
     slider.append(prevBtn, imgBox, nextBtn)
