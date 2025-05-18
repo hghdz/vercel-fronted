@@ -173,6 +173,9 @@ export default function MBTISpeakingSliderApp() {
         : `<p>我是<span class='${styles.highlight}'>${C1}</span>型。</p><p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${pinyinMap[C1]}</span> xíng.</p><p class='translation'>(나는 ${korMap[C1]}형이야.)</p>`
     }
     area.appendChild(box)
+    // QA 모드 문형 박스 가운데 정렬 및 간격 확보
+    box.style.margin = "16px auto 0"
+
     addControls(
       step === 0
         ? (mode === "basic" ? `你是${basicPairs[idx][0]}还是${basicPairs[idx][1]}?` : mode === "qa" ? "你的MBTI是什么?" : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)

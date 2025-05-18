@@ -122,3 +122,23 @@
 .loginButton:hover {
   background: #3367d6;
 }
+
+/* QA 모드 반응형 이미지 그리드 */
+.halfSize {
+  width: calc((100% - 3 * 8px) / 4); /* 4열, gap 8px */
+  height: auto;
+}
+
+/* 모바일: 한 줄에 2열 */
+@media (max-width: 480px) {
+  .halfSize {
+    width: calc((100% - 1 * 8px) / 2); /* 2열, gap 8px */
+  }
+}
+
+/* 그 외 (tablet~desktop): 4열 유지 */
+@media (min-width: 481px) {
+  .halfSize {
+    width: calc((100% - 3 * 8px) / 4);
+  }
+}
