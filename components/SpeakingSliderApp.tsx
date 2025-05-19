@@ -58,11 +58,12 @@ export default function SpeakingSliderApp() {
 
   // 결과 불러오기
   useEffect(() => {
-    if (!user?.email) return
+    const email = user?.email
+    if (!email) return
     ;(async () => {
       try {
         const res = await fetch(
-          `/api/get-strengths?email=${encodeURIComponent(user.email)}`
+          `/api/get-strengths?email=${encodeURIComponent(email)}`
         )
         const data = await res.json()
         if (data.open) setResult(data)
@@ -95,21 +96,33 @@ export default function SpeakingSliderApp() {
     const base = current.baseSentence + "。"
     switch (current.windowType) {
       case "blind":
-        return { zh: `朋友说${current.baseSentence}。`, py: `Péngyou shuō ${current.basePinyin}`, kr: `친구가 말하길 ${current.desc}` }
+        return {
+          zh: `朋友说${current.baseSentence}。`,
+          py: `Péngyou shuō ${current.basePinyin}`,
+          kr: `친구가 말하길 ${current.desc}`,
+        }
       case "hidden":
-        return { zh: `我觉得${current.baseSentence}。`, py: `Wǒ juéde ${current.basePinyin}`, kr: `내가 생각하기에 ${current.desc}` }
+        return {
+          zh: `我觉得${current.baseSentence}。`,
+          py: `Wǒ juéde ${current.basePinyin}`,
+          kr: `내가 생각하기에 ${current.desc}`,
+        }
       case "unknown":
-        return { zh: current.unknownSentence + "。", py: current.unknownPinyin, kr: current.unknownDesc }
+        return {
+          zh: current.unknownSentence + "。",
+          py: current.unknownPinyin,
+          kr: current.unknownDesc,
+        }
       default:
         return { zh: base, py: current.basePinyin, kr: current.desc }
     }
   }, [current])
 
-  // Google Translate 서버사이드 프록시를 이용한 TTS 재생
+  // 서버 사이드 TTS API 호출 및 재생
   const playTTS = (text: string) => {
     const url = `/api/tts?text=${encodeURIComponent(text)}`
     const audio = new Audio(url)
-    audio.play().catch((e) => console.error('TTS 재생 오류:', e, url))
+    audio.play().catch((e) => console.error("TTS 재생 오류:", e, url))
   }
 
   const startRecording = async () => {
@@ -140,54 +153,84 @@ export default function SpeakingSliderApp() {
     setIsRecording(false)
   }
 
-  if (!user) return (
-    <div className={styles.wrapper}>
-      <h2>🔒 로그인이 필요합니다</h2>
-      <button className={styles.loginButton} onClick={() => signInWithPopup(auth, provider)}>
-        Google 계정으로 로그인
-      </button>
-    </div>
-  )
+  if (!user)
+    return (
+      <div className={styles.wrapper}>
+        <h2>🔒 로그인이 필요합니다</h2>
+        <button className={styles.loginButton} onClick={() => signInWithPopup(auth, provider)}>
+          Google 계정으로 로그인
+        </button>
+      </div>
+    )
   if (!result) return <div className={styles.wrapper}>로딩 중…</div>
   if (slides.length === 0) return <div className={styles.wrapper}>슬라이드가 없습니다.</div>
 
   const currentIdx = WINDOW_ORDER.indexOf(current.windowType)
-  const highlight = (text: string, key: string) => text.replace(
-    new RegExp(key, 'g'),
-    `<span style="color:red;font-weight:bold;">${key}</span>`
-  )
+  const highlight = (text: string, key: string) =>
+    text.replace(
+      new RegExp(key, "g"),
+      `<span style="color:red;font-weight:bold;">${key}</span>`
+    )
 
   return (
     <div className={styles.wrapper}>
       <header className={styles.header}>
-        <Link href="/"><a className={styles.homeButton}>M.E.N.G</a></Link>
+        <Link href="/">
+          <a className={styles.homeButton}>M.E.N.G</a>
+        </Link>
         <h1 className={styles.pageTitle}>✨강점 말하기 연습✨</h1>
-        <button className={styles.logoutButton} onClick={() => signOut(auth)}>🚪 로그아웃</button>
+        <button className={styles.logoutButton} onClick={() => signOut(auth)}>
+          🚪 로그아웃
+        </button>
       </header>
 
       <div className={styles.windowLabel}>{WINDOW_LABELS[current.windowType]}</div>
-      <div className={styles.progressBarTrack}>{WINDOW_ORDER.map((_,i)=>(
-        <div key={i} className={styles.progressSegment} style={{ backgroundColor: i===currentIdx?'#6366f1':'#e5e7eb' }}/>
-      ))}</div>
+      <div className={styles.progressBarTrack}>
+        {WINDOW_ORDER.map((_, i) => (
+          <div
+            key={i}
+            className={styles.progressSegment}
+            style={{ backgroundColor: i === currentIdx ? "#6366f1" : "#e5e7eb" }}
+          />
+        ))}
+      </div>
 
       <div className={styles.slider}>
-        <button className={styles.navButton} onClick={()=>setIndex(i=>Math.max(0,i-1))}>◀</button>
-        <div className={styles.imageBox}><img src={`${IMAGE_BASE}/${current.hanzi}.png`} alt={current.hanzi} className={styles.img} key={current.hanzi}/></div>
-        <button className={styles.navButton} onClick={()=>setIndex(i=>Math.min(slides.length-1,i+1))}>▶</button>
+        <button className={styles.navButton} onClick={() => setIndex((i) => Math.max(0, i - 1))}>
+          ◀
+        </button>
+        <div className={styles.imageBox}>
+          <img
+            src={`${IMAGE_BASE}/${current.hanzi}.png`} alt={current.hanzi} className={styles.img}
+            key={current.hanzi}
+          />
+        </div>
+        <button className={styles.navButton} onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}>
+          ▶
+        </button>
       </div>
 
       <div className={styles.sentenceBox}>
-        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }}/>
-        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.pinyin) }}/>
-        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }}/>
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.zh, current.hanzi) }} />
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.py, current.pinyin) }} />
+        <p dangerouslySetInnerHTML={{ __html: highlight(sentence.kr, current.hanzi) }} />
       </div>
 
       <div className={styles.buttonGroup}>
-        <button className={`${styles.button} ${styles.listen}`} onClick={()=>playTTS(sentence.zh)}>🔊 듣기</button>
-        <button className={`${styles.button} ${isRecording?styles.stop:styles.record}`} onClick={()=>!mediaRecorder?startRecording():stopRecording()}>{isRecording?'⏹ 중지':'🎙 녹음'}</button>
-        <button className={`${styles.button} ${styles.play}`} onClick={()=>audioRef.current?.play()}>▶ 재생</button>
+        <button className={`${styles.button} ${styles.listen}`} onClick={() => playTTS(sentence.zh)}>
+          🔊 듣기
+        </button>
+        <button
+          className={`${styles.button} ${isRecording ? styles.stop : styles.record}`}
+          onClick={() => (!mediaRecorder ? startRecording() : stopRecording())}
+        >
+          {isRecording ? "⏹ 중지" : "🎙 녹음"}
+        </button>
+        <button className={`${styles.button} ${styles.play}`} onClick={() => audioRef.current?.play()}>
+          ▶ 재생
+        </button>
       </div>
-      <audio ref={audioRef} controls className={styles.audio}/>
+      <audio ref={audioRef} controls className={styles.audio} />
     </div>
   )
 }
