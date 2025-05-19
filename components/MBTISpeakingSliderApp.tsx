@@ -50,9 +50,16 @@ export default function MBTISpeakingSliderApp() {
   const basicPairs = [["E","I"],["S","N"],["F","T"],["J","P"]]
   const imageMap: Record<string,string> = { E:"外向.png", I:"内向.png", S:"感觉.png", N:"直觉.png", F:"情感.png", T:"思考.png", J:"判断.png", P:"知觉.png" }
   const fullMap: Record<string,[string,string]> = { E:["外向","内向"], I:["内向","外向"], S:["感觉","直觉"], N:["直觉","感觉"], F:["情感","思考"], T:["思考","情感"], J:["判断","知觉"], P:["知觉","判断"] }
-  const pinyinMap: Record<string,string> = { '外向':'wàixiàng','内向':'nèixiàng','感觉':'gǎnjué','直觉':'zhíjué','情感':'qínggǎn','思考':'sīkǎo','判断':'pànduàn','知觉':'zhījué' }
-  const korMap: Record<string,string> = { '外向':'외향','内向':'내향','感觉':'감각','直觉':'직관','情感':'감정','思考':'사고','判断':'판단','知觉':'인지' }
+  const pinyinMap: Record<string,string> = { 外向:'wàixiàng', 内向:'nèixiàng', 感觉:'gǎnjué', 直觉:'zhíjué', 情感:'qínggǎn', 思考:'sīkǎo', 判断:'pànduàn', 知觉:'zhījué' }
+  const korMap: Record<string,string> = { 外向:'외향', 内向:'내향', 感觉:'감각', 直觉:'직관', 情感:'감정', 思考:'사고', 判断:'판단', 知觉:'인지' }
   const baseUrl = "https://raw.githubusercontent.com/hghdz/card-selector-app/main/images/"
+
+  // Google TTS proxy 호출 및 재생
+  const playTTS = (text: string) => {
+    const url = `/api/tts?text=${encodeURIComponent(text)}`
+    const audio = new Audio(url)
+    audio.play().catch(e => console.error('TTS 재생 오류:', e, url))
+  }
 
   function addControls(text: string) {
     const wrapper = document.createElement("div")
@@ -73,9 +80,7 @@ export default function MBTISpeakingSliderApp() {
       if (bi.disabled) b.disabled = true
       b.addEventListener("click", () => {
         if (bi.type === "tts") {
-          const u = new SpeechSynthesisUtterance(text)
-          u.lang = "zh-CN"; u.rate = 0.7
-          speechSynthesis.speak(u)
+          playTTS(text)
         } else if (bi.type === "rec") {
           if (!recorder) {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
@@ -90,7 +95,9 @@ export default function MBTISpeakingSliderApp() {
               rec.start(); setRecorder(rec)
             })
           } else { recorder.stop() }
-        } else { audioRef.current?.play() }
+        } else {
+          audioRef.current?.play()
+        }
       })
       wrapper.appendChild(b)
     })
@@ -102,7 +109,7 @@ export default function MBTISpeakingSliderApp() {
     const area = practiceAreaRef.current!
     area.innerHTML = ""
 
-    // 네비게이션 + 이미지
+    // Slider
     const slider = document.createElement("div")
     slider.className = styles.slider
     const prevBtn = document.createElement("button")
@@ -116,14 +123,15 @@ export default function MBTISpeakingSliderApp() {
     const imgBox = document.createElement("div")
     imgBox.className = styles.imageBox
     if (mode === "qa") {
-      imgBox.style.width = "100%"
       imgBox.style.display = "flex"
-      imgBox.style.flexWrap = "wrap"  // 줄바꿈 허용
+      imgBox.style.flexWrap = "wrap"
       imgBox.style.justifyContent = "center"
       imgBox.style.gap = "8px"
       letters.forEach(c => {
-        const img = document.createElement("img");
-        img.src = baseUrl + imageMap[c]; img.alt = c; img.className = styles.halfSize;
+        const img = document.createElement("img")
+        img.src = baseUrl + imageMap[c]
+        img.alt = c
+        img.className = styles.halfSize
         imgBox.appendChild(img)
       })
     } else {
@@ -134,15 +142,13 @@ export default function MBTISpeakingSliderApp() {
       img.className = styles.img
       imgBox.appendChild(img)
     }
-
     const nextBtn = document.createElement("button")
     nextBtn.className = styles.navButton
     nextBtn.textContent = "▶"
     nextBtn.style.marginLeft = "16px"
     nextBtn.onclick = () => {
-      if (step === 0) {
-        setStep(1)
-      } else {
+      if (step === 0) setStep(1)
+      else {
         if (mode !== "qa") {
           if (idx < letters.length - 1) setIdx(idx + 1)
           else setIdx(0)
@@ -153,7 +159,7 @@ export default function MBTISpeakingSliderApp() {
     slider.append(prevBtn, imgBox, nextBtn)
     area.appendChild(slider)
 
-    // 문장 박스
+    // Sentence Box
     const box = document.createElement("div")
     box.className = styles.sentenceBox
     if (mode === "basic") {
@@ -172,15 +178,20 @@ export default function MBTISpeakingSliderApp() {
         : `<p>我是<span class='${styles.highlight}'>${C1}</span>型。</p><p class='pinyin'>Wǒ shì <span class='${styles.highlight}'>${pinyinMap[C1]}</span> xíng.</p><p class='translation'>(나는 ${korMap[C1]}형이야.)</p>`
     }
     area.appendChild(box)
-    // QA 모드 문형 박스 가운데 정렬 및 간격 확보
-    box.style.margin = "16px auto 0"
 
-    addControls(
-      step === 0
-        ? (mode === "basic" ? `你是${basicPairs[idx][0]}还是${basicPairs[idx][1]}?` : mode === "qa" ? "你的MBTI是什么?" : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)
-        : (mode === "basic" ? `我是${letters[idx]}` : mode === "qa" ? `我的MBTI是${resultType}` : `我是${fullMap[letters[idx]][0]}型`)
-    )
-
+    // Controls 텍스트 결정 및 추가
+    const textForTTS = step === 0
+      ? (mode === "basic"
+          ? `你是${basicPairs[idx][0]}还是${basicPairs[idx][1]}?`
+          : mode === "qa"
+          ? "你的MBTI是什么?"
+          : `你是${fullMap[letters[idx]][0]}型还是${fullMap[letters[idx]][1]}型?`)
+      : (mode === "basic"
+          ? `我是${letters[idx]}`
+          : mode === "qa"
+          ? `我的MBTI是${resultType}`
+          : `我是${fullMap[letters[idx]][0]}型`)
+    addControls(textForTTS)
   }, [mode, idx, step, resultType])
 
   if (!user) return (
