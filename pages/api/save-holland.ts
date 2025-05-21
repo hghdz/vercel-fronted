@@ -24,6 +24,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).end();
   }
 
+
+  console.log('[save-holland] handler start');
+  console.log('[save-holland] method:', req.method);
+  console.log('[save-holland] body:', req.body);
+  console.log('[save-holland] MONGODB_URI:', uri);
+  console.log('[save-holland] dbName:', dbName);
+
+
+
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
