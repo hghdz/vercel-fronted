@@ -13,7 +13,17 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
+    // CORS 허용
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    // Preflight 요청에 대한 응답
+    return res.status(204).end();
+  }
+
+ if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
   const { email, types, hobbies } = req.body;
