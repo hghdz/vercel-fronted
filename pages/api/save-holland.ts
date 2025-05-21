@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI!;
+const dbName = 'MENG';
 let cachedClient: MongoClient | null = null;
 
 async function connectToDatabase() {
