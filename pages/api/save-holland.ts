@@ -24,6 +24,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
+
+ res.setHeader('Cache-Control', 'no-store');
+
   // ───── CORS 헤더 ─────
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS')
