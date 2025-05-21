@@ -29,34 +29,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('[save-holland] method:', req.method);
   console.log('[save-holland] body:', JSON.stringify(req.body));
 
-
+  if (req.method === 'OPTIONS') {
+    console.log('[save-holland] OPTIONS preflight');
+    return res.status(200).end();
+  }
 
   if (req.method !== 'POST') {
+    console.log('[save-holland] ✋ not POST');
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { email, types, hobbies } = req.body;
-  if (
-    typeof email !== 'string' ||
-    !Array.isArray(types) ||
-    !Array.isArray(hobbies)
-  ) {
-    return res.status(400).json({ message: 'Invalid payload' });
-  }
+  // payload 검증 성공 시
+  console.log('[save-holland] ✔️ valid payload');
 
   try {
     const client = await connectToDatabase();
-    const db = client.db();
-    const collection = db.collection('holland_practice');
-    await collection.insertOne({
+    console.log('[save-holland] connected to MongoDB');
+
+    const db = client.db(dbName);
+    const col = db.collection('holland_practice');
+
+    const result = await col.insertOne({
       email,
       types,
       hobbies,
       timestamp: new Date(),
     });
-    return res.status(200).json({ message: 'Saved successfully' });
+    console.log('[save-holland] 📦 insertedId:', result.insertedId);
+
+    return res.status(200).json({ message: 'Saved', insertedId: result.insertedId });
   } catch (error) {
-    console.error('DB 저장 오류:', error);
+    console.error('[save-holland] 💥 DB error:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
