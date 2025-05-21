@@ -72,8 +72,8 @@ export default async function handler(
 
     res.status(200).json({
       message: 'Saved successfully',
-      insertedId: result.insertedId,
-    })
+      insertedId: result.insertedId.toString(),
+    });
   } catch (error) {
     console.error('[save-holland] 💥 handler Error:', error)
     res.status(500).json({ message: 'Internal Server Error' })
