@@ -29,14 +29,16 @@ export default async function handler(
 
   // 3) Preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).end()
+    res.status(200).end()
+    return
   }
 
   console.log('[save-holland] handler start', req.method, req.body)
 
   // 4) POST 외 거부
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' })
+    res.status(405).json({ message: 'Method Not Allowed' })
+    return
   }
 
   const { email, types, hobbies } = req.body
@@ -45,7 +47,8 @@ export default async function handler(
     !Array.isArray(types) ||
     !Array.isArray(hobbies)
   ) {
-    return res.status(400).json({ message: 'Invalid Payload' })
+    res.status(400).json({ message: 'Invalid Payload' })
+    return
   }
 
   try {
@@ -60,12 +63,13 @@ export default async function handler(
     })
     console.log('[save-holland] insertedId:', result.insertedId)
 
-    return res.status(200).json({
+    res.status(200).json({
       message: 'Saved successfully',
       insertedId: result.insertedId.toString(),
     })
   } catch (err) {
     console.error('[save-holland] Error:', err)
-    return res.status(500).json({ message: 'Internal Server Error' })
+    res.status(500).json({ message: 'Internal Server Error' })
+    return
   }
 }
