@@ -25,11 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
 
-  console.log('[save-holland] handler start');
+  console.log('[save-holland] 🔥 handler start');
   console.log('[save-holland] method:', req.method);
-  console.log('[save-holland] body:', req.body);
-  console.log('[save-holland] MONGODB_URI:', uri);
-  console.log('[save-holland] dbName:', dbName);
+  console.log('[save-holland] body:', JSON.stringify(req.body));
 
 
 
