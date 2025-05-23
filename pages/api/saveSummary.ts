@@ -7,9 +7,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // 1️⃣ CORS 헤더 설정
-  res.setHeader("Access-Control-Allow-Origin", "*");                    // 모든 출처 허용
-  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");        // 허용 메서드
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");        // 허용 헤더
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   // 2️⃣ Preflight 요청(OPTIONS)에 200 응답
   if (req.method === "OPTIONS") {
@@ -37,8 +37,12 @@ export default async function handler(
 
   try {
     const client = await clientPromise;
-    const db = client.db();
-    const result = await db.collection("summaries").insertOne({
+    const db = client.db();  
+    // 🔍 연결된 DB 이름 확인
+    console.log("🔍 Connected to DB:", db.databaseName);
+
+    const collection = db.collection("summaries");
+    const result = await collection.insertOne({
       email,
       summary,
       createdAt: new Date(),
@@ -46,8 +50,12 @@ export default async function handler(
 
     // ⑤ InsertOne 결과 로깅
     console.log(
-      `✅ [saveSummary] Inserted document _id=${result.insertedId}, acknowledged=${result.acknowledged}`
+      `✅ [saveSummary] InsertedId=${result.insertedId}, acknowledged=${result.acknowledged}`
     );
+
+    // 🔍 실제 삽입된 도큐먼트 확인
+    const insertedDoc = await collection.findOne({ _id: result.insertedId });
+    console.log("🔍 InsertedDoc:", insertedDoc);
 
     return res.status(201).json({ success: true, insertedId: result.insertedId });
   } catch (error) {
