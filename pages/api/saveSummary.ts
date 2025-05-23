@@ -37,27 +37,25 @@ export default async function handler(
 
   try {
     const client = await clientPromise;
-    const db = client.db();  
-    // 🔍 연결된 DB 이름 확인
-    console.log("🔍 Connected to DB:", db.databaseName);
+    const db = client.db();
 
+    // ⑤ 데이터 삽입 및 결과 확인
     const collection = db.collection("summaries");
-    const result = await collection.insertOne({
+    const insertResult = await collection.insertOne({
       email,
       summary,
       createdAt: new Date(),
     });
+    const insertedId = insertResult.insertedId;
+    const insertedDoc = await collection.findOne({ _id: insertedId });
 
-    // ⑤ InsertOne 결과 로깅
-    console.log(
-      `✅ [saveSummary] InsertedId=${result.insertedId}, acknowledged=${result.acknowledged}`
-    );
-
-    // 🔍 실제 삽입된 도큐먼트 확인
-    const insertedDoc = await collection.findOne({ _id: result.insertedId });
-    console.log("🔍 InsertedDoc:", insertedDoc);
-
-    return res.status(201).json({ success: true, insertedId: result.insertedId });
+    // ⑥ JSON으로 삽입된 문서 전체를 반환
+    return res.status(201).json({
+      success: true,
+      dbName: db.databaseName,
+      insertedId,
+      insertedDoc,
+    });
   } catch (error) {
     console.error("💥 [saveSummary] Failed to save summary:", error);
     return res.status(500).json({ error: "Failed to save summary" });
