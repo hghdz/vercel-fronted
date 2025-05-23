@@ -2,6 +2,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import clientPromise from "../../lib/mongodb";
 
+// 환경 변수로 DB 이름 지정
+const DB_NAME = process.env.MONGODB_DB_NAME;
+if (!DB_NAME) {
+  throw new Error("Please set the MONGODB_DB_NAME environment variable");
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -22,8 +28,8 @@ export default async function handler(
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
+  // 요청 body 파싱 및 유효성 검사
   const { chinese, pinyin, meaning } = req.body;
-  // 간단한 유효성 검사
   if (
     !chinese || typeof chinese !== "string" ||
     !pinyin  || typeof pinyin  !== "string" ||
@@ -36,17 +42,28 @@ export default async function handler(
 
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db(DB_NAME);
+    console.log(`🔍 Using DB: ${db.databaseName}`);
+
     const collection = db.collection("jobs");
-    const result = await collection.insertOne({
+    const insertResult = await collection.insertOne({
       chinese,
       pinyin,
       meaning,
       createdAt: new Date(),
     });
+    const insertedId = insertResult.insertedId;
 
-    console.log("✅ [saveJob] Inserted job id=", result.insertedId);
-    return res.status(201).json({ success: true, insertedId: result.insertedId });
+    // 삽입된 문서 확인
+    const insertedDoc = await collection.findOne({ _id: insertedId });
+    console.log("✅ InsertedDoc:", insertedDoc);
+
+    return res.status(201).json({
+      success: true,
+      dbName: db.databaseName,
+      insertedId,
+      insertedDoc,
+    });
   } catch (error) {
     console.error("💥 [saveJob] Failed to save job:", error);
     return res.status(500).json({ error: "Failed to save job" });
