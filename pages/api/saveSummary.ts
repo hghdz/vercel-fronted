@@ -38,14 +38,20 @@ export default async function handler(
   try {
     const client = await clientPromise;
     const db = client.db();
-    await db.collection("summaries").insertOne({
+    const result = await db.collection("summaries").insertOne({
       email,
       summary,
       createdAt: new Date(),
     });
-    return res.status(201).json({ success: true });
+
+    // ⑤ InsertOne 결과 로깅
+    console.log(
+      `✅ [saveSummary] Inserted document _id=${result.insertedId}, acknowledged=${result.acknowledged}`
+    );
+
+    return res.status(201).json({ success: true, insertedId: result.insertedId });
   } catch (error) {
-    console.error("💥 Failed to save summary:", error);
+    console.error("💥 [saveSummary] Failed to save summary:", error);
     return res.status(500).json({ error: "Failed to save summary" });
   }
 }
