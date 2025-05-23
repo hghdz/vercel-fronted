@@ -2,6 +2,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import clientPromise from "../../lib/mongodb";
 
+// 0️⃣ 환경 변수로 DB 이름 지정
+const DB_NAME = process.env.MONGODB_DB_NAME || "your_database_name";
+if (!DB_NAME) {
+  throw new Error("Please set the MONGODB_DB_NAME environment variable");
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -37,9 +43,10 @@ export default async function handler(
 
   try {
     const client = await clientPromise;
-    const db = client.db();
+    // 5️⃣ 명시적인 DB 이름 사용
+    const db = client.db(DB_NAME);
+    console.log(`🔍 Using DB: ${db.databaseName}`);
 
-    // ⑤ 데이터 삽입 및 결과 확인
     const collection = db.collection("summaries");
     const insertResult = await collection.insertOne({
       email,
@@ -47,9 +54,11 @@ export default async function handler(
       createdAt: new Date(),
     });
     const insertedId = insertResult.insertedId;
-    const insertedDoc = await collection.findOne({ _id: insertedId });
 
-    // ⑥ JSON으로 삽입된 문서 전체를 반환
+    // 6️⃣ 삽입된 문서 확인
+    const insertedDoc = await collection.findOne({ _id: insertedId });
+    console.log("✅ InsertedDoc:", insertedDoc);
+
     return res.status(201).json({
       success: true,
       dbName: db.databaseName,
