@@ -1,3 +1,4 @@
+// pages/api/get-values.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import clientPromise from "../../lib/mongodb";
 
@@ -21,19 +22,14 @@ export default async function handler(
     const db = client.db("MENG");
     const record = await db.collection("values").findOne({ email });
 
-    console.log("[get-values] record from DB:", record);
-
-    const valuesArray = Array.isArray(record?.values) ? record.values! : [];
-    const topValuesArray = Array.isArray((record as any)?.topValues)
-      ? (record as any).topValues
+    const topValuesArray = Array.isArray(record?.topValues)
+      ? record.topValues.slice(0, 5)
       : [];
 
-    const payload = (valuesArray.length ? valuesArray : topValuesArray).slice(0, 5);
-
-    console.log("[get-values] payload to client:", payload);
+    console.log("[get-values] topValues only:", topValuesArray);
 
     return res.status(200).json({
-      values: payload,
+      values: topValuesArray,
       _debug: record,
     });
   } catch (err) {
@@ -41,4 +37,3 @@ export default async function handler(
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
-console.log("🔥 get-values 최신 코드 실행됨");
