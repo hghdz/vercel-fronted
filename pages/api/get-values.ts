@@ -20,13 +20,22 @@ export default async function handler(
   try {
     const client = await clientPromise;
     const db = client.db("MENG");
-    const record = await db.collection("values").findOne({ email });
+
+    // ✅ 최신 문서 하나 가져오기
+    const record = await db
+      .collection("values")
+      .find({ email })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .next();
+
+    console.log("[get-values] 최신 record:", record);
 
     const topValuesArray = Array.isArray(record?.topValues)
       ? record.topValues.slice(0, 5)
       : [];
 
-    console.log("[get-values] topValues only:", topValuesArray);
+    console.log("[get-values] 최종 topValues:", topValuesArray);
 
     return res.status(200).json({
       values: topValuesArray,
