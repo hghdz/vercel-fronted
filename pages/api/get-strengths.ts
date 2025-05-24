@@ -6,24 +6,33 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // -- CORS 설정 생략 --
+  // CORS 헤더
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Method Not Allowed" });
+  }
 
   const raw = req.query.email;
   const email = typeof raw === "string" && raw.trim() ? raw.toLowerCase() : null;
   console.log("[get-strengths] Received email:", email);
-  if (!email) return res.status(400).json({ message: "Missing email" });
+  if (!email) {
+    return res.status(400).json({ message: "Missing email" });
+  }
 
   try {
     const client = await clientPromise;
     console.log("[get-strengths] clientPromise resolved");
-
-    // 1) default DB 사용해보기 (먼저 client.db()로!)
-    const db = client.db();  
-    console.log("[get-strengths] Using default DB:", db.databaseName);
-
-    // 2) 혹은 명시적 DB_NAME 환경변수를 쓰려면
-    // const db = client.db(process.env.MONGODB_DB);
-    // console.log("[get-strengths] Using DB from env:", db.databaseName);
+    
+    // MONGODB_DB env가 없으면 기본값으로 'MENG' 사용
+    const dbName = process.env.MONGODB_DB || "MENG";
+    const db = client.db(dbName);
+    console.log("[get-strengths] Using DB:", db.databaseName);
 
     const record = await db
       .collection("strengths")
