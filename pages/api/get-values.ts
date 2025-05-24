@@ -41,3 +41,4 @@ export default async function handler(
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+console.log("🔥 get-values 최신 코드 실행됨");
