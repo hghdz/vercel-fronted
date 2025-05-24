@@ -10,12 +10,10 @@ export default async function handler(
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   // 프리플라이트 요청 처리
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -27,7 +25,7 @@ export default async function handler(
 
   try {
     const client = await clientPromise;
-    const db = client.db(MENG);
+    const db = client.db("MENG");
     const record = await db
       .collection('strengths')
       .findOne({ email: email.toLowerCase() });
