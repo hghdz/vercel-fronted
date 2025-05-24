@@ -10,8 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const client = await clientPromise
     const db = client.db(process.env.MONGODB_DB)
 
-    const [mbti, strengths, values, holland, jobs, summaries] = await Promise.all([
-      db.collection('mbti-results').findOne({ email }),
+    // 각 컬렉션에서 전체 문서 가져오기
+    const [mbtiDoc, strengthsDoc, valuesDoc, hollandDoc, jobs, summariesDoc] = await Promise.all([
+      db.collection('mbti_results').findOne({ email }),
       db.collection('strengths').findOne({ email }),
       db.collection('values').findOne({ email }),
       db.collection('holland_practice').findOne({ email }),
@@ -19,7 +20,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       db.collection('summaries').findOne({ email }),
     ])
 
-    res.status(200).json({ mbti, strengths, values, holland, jobs, summaries })
+    // 응답 데이터 구조를 프론트에 맞게 매핑
+    return res.status(200).json({
+      mbti: mbtiDoc?.mbti ?? null,
+      strengths: strengthsDoc?.strengths ?? [],
+      values: valuesDoc?.topValues ?? [],
+      holland: hollandDoc
+        ? { types: hollandDoc.types || [], hobbies: hollandDoc.hobbies || [] }
+        : { types: [], hobbies: [] },
+      jobs: jobs.map(job => ({
+        _id: job._id,
+        chinese: job.chinese,
+        pinyin: job.pinyin,
+        meaning: job.meaning,
+        createdAt: job.createdAt,
+      })),
+      summaries: summariesDoc?.summary ?? null,
+    })
   } catch (error) {
     console.error('DB 조회 오류:', error)
     res.status(500).json({ error: 'Internal server error.' })
