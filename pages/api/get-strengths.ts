@@ -1,5 +1,9 @@
+// pages/api/get-strengths.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import clientPromise from "../../lib/mongodb";
+
+const DB_NAME = process.env.MONGODB_DB || "yourDatabaseName";  
+// ↑ Vercel 환경변수에 MONGODB_DB=실제DB이름 을 설정하세요.
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,43 +14,37 @@ export default async function handler(
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // OPTIONS 요청에 대한 응답
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
-  // GET 요청만 처리
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
-  // 이메일 쿼리 파라미터 받기
   const raw = req.query.email;
   const email =
     typeof raw === "string" && raw.trim() !== "" ? raw.toLowerCase() : null;
-
-  console.log("Received email:", email);  // 받은 이메일 값 확인
-
+  console.log("[get-strengths] Received email:", email);
   if (!email) {
     return res.status(400).json({ message: "Missing email" });
   }
 
   try {
-    // MongoDB 클라이언트 연결
     const client = await clientPromise;
-    const db = client.db();
-    
-    // 이메일로 데이터 조회
-    const record = await db.collection("strengths").findOne({ email });
+    const db = client.db(DB_NAME);
+    console.log("[get-strengths] Connected to DB:", db.databaseName);
 
-    // 데이터가 없으면 빈 배열 반환
+    // 대소문자 무시하려면 regex 사용
+    const record = await db.collection("strengths").findOne({
+      email: { $regex: new RegExp(`^${email}$`, "i") }
+    });
+    console.log("[get-strengths] Record found:", record);
+
     const strengths: string[][] = record?.strengths ?? [];
-
-    // 정상적으로 데이터를 반환
+    console.log("[get-strengths] Returning strengths:", strengths);
     return res.status(200).json({ strengths });
   } catch (err) {
-    // 오류 발생 시 로그 출력 및 서버 에러 반환
-    console.error("get-strengths error:", err);
+    console.error("[get-strengths] ERROR:", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
