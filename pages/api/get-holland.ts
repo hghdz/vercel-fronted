@@ -1,8 +1,16 @@
-// /api/get-holland.ts
 import type { NextApiRequest, NextApiResponse } from "next"
 import clientPromise from "@/lib/mongodb"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // ✅ CORS 헤더 추가
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end() // 사전 요청(preflight) 대응
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "허용되지 않은 메서드입니다." })
   }
