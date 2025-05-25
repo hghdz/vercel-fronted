@@ -16,32 +16,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const client = await clientPromise
     const db = client.db("MENG")
 
-    // ✅ 여기 컬렉션 이름을 jobInfo 로 변경!
+    // ✅ jobInfo에서 최신 데이터 하나만 조회
     const job = await db.collection("jobInfo").findOne(
       { email },
       {
         sort: { createdAt: -1 },
-        projection: { _id: 0, chinese: 1, pinyin: 1, meaning: 1 },
+        projection: {
+          _id: 0,
+          chinese: 1,
+          pinyin: 1,
+          meaning: 1,
+          summary: 1,
+        },
       }
     )
 
-    const summary = await db.collection("summaries").findOne(
-      { email },
-      {
-        sort: { createdAt: -1 },
-        projection: { _id: 0, summary: 1 },
-      }
-    )
-
-    if (!job && !summary) {
-      return res.status(404).json({ error: "직업 정보가 없습니다." })
+    if (!job) {
+      return res.status(404).json({ error: "저장된 직업 정보가 없습니다." })
     }
 
+    // ✅ 응답: 모든 정보 포함
     return res.status(200).json({
-      chinese: job?.chinese || "",
-      pinyin: job?.pinyin || "",
-      meaning: job?.meaning || "",
-      summary: summary?.summary || "",
+      chinese: job.chinese || "",
+      pinyin: job.pinyin || "",
+      meaning: job.meaning || "",
+      summary: job.summary || "",
     })
   } catch (err) {
     console.error("❌ 직업 정보 조회 실패:", err)
