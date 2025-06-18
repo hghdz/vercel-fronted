@@ -5,7 +5,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // CORS 설정
   res.setHeader("Access-Control-Allow-Origin", "*")
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS")
   res.setHeader("Access-Control-Allow-Headers", "Content-Type")
@@ -23,7 +22,7 @@ export default async function handler(
     const record = await db.collection("strengths").findOne({ email })
 
     if (!record || !Array.isArray(record.strengths) || record.strengths.length !== 3) {
-      return res.status(404).json({ message: "Invalid or missing strengths data" })
+      return res.status(200).json({ open: [], blind: [], hidden: [], unknown: [] })
     }
 
     const [g1, g2, g3] = record.strengths
@@ -32,6 +31,9 @@ export default async function handler(
     const blind = g2.filter((k) => !g1.includes(k))
     const hidden = g1.filter((k) => !g2.includes(k))
     const unknown = g3
+
+console.log("[get-strengths] 정상 작동 중");
+
 
     return res.status(200).json({ open, blind, hidden, unknown })
   } catch (err) {
