@@ -19,7 +19,16 @@ export default async function handler(
   try {
     const client = await clientPromise
     const db = client.db(process.env.MONGODB_DB || "MENG")
-    const record = await db.collection("strengths").findOne({ email })
+
+    // ✅ 가장 최근 updatedAt 기준으로 정렬된 한 건만 가져오기
+    const record = await db
+      .collection("strengths")
+      .find({ email })
+      .sort({ updatedAt: -1 }) // 최신순
+      .limit(1)
+      .next()
+
+    console.log("[get-strengths] 찾은 기록:", record)
 
     if (!record || !Array.isArray(record.strengths) || record.strengths.length !== 3) {
       return res.status(200).json({ open: [], blind: [], hidden: [], unknown: [] })
