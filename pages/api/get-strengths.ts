@@ -1,50 +1,41 @@
-// pages/api/get-strengths.ts
-import type { NextApiRequest, NextApiResponse } from "next";
-import clientPromise from "../../lib/mongodb";
+import type { NextApiRequest, NextApiResponse } from "next"
+import clientPromise from "../../lib/mongodb"
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // CORS 헤더
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // CORS 설정
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type")
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method Not Allowed" });
-  }
+  if (req.method === "OPTIONS") return res.status(200).end()
+  if (req.method !== "GET") return res.status(405).json({ message: "Method Not Allowed" })
 
-  const raw = req.query.email;
-  const email = typeof raw === "string" && raw.trim() ? raw.toLowerCase() : null;
-  console.log("[get-strengths] Received email:", email);
-  if (!email) {
-    return res.status(400).json({ message: "Missing email" });
-  }
+  const raw = req.query.email
+  const email = typeof raw === "string" && raw.trim() ? raw.toLowerCase() : null
+  if (!email) return res.status(400).json({ message: "Missing email" })
 
   try {
-    const client = await clientPromise;
-    console.log("[get-strengths] clientPromise resolved");
-    
-    // MONGODB_DB env가 없으면 기본값으로 'MENG' 사용
-    const dbName = process.env.MONGODB_DB || "MENG";
-    const db = client.db(dbName);
-    console.log("[get-strengths] Using DB:", db.databaseName);
+    const client = await clientPromise
+    const db = client.db(process.env.MONGODB_DB || "MENG")
+    const record = await db.collection("strengths").findOne({ email })
 
-    const record = await db
-      .collection("strengths")
-      .findOne({ email });
-    console.log("[get-strengths] Record found:", record);
+    if (!record || !Array.isArray(record.strengths) || record.strengths.length !== 3) {
+      return res.status(404).json({ message: "Invalid or missing strengths data" })
+    }
 
-    const strengths: string[][] = record?.strengths ?? [];
-    console.log("[get-strengths] Returning strengths:", strengths);
+    const [g1, g2, g3] = record.strengths
 
-    return res.status(200).json({ strengths });
+    const open = g1.filter((k) => g2.includes(k))
+    const blind = g2.filter((k) => !g1.includes(k))
+    const hidden = g1.filter((k) => !g2.includes(k))
+    const unknown = g3
+
+    return res.status(200).json({ open, blind, hidden, unknown })
   } catch (err) {
-    console.error("[get-strengths] ERROR:", err);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error("[get-strengths] ERROR:", err)
+    return res.status(500).json({ message: "Internal Server Error" })
   }
 }
