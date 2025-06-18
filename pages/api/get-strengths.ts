@@ -5,6 +5,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // CORS 설정
   res.setHeader("Access-Control-Allow-Origin", "*")
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS")
   res.setHeader("Access-Control-Allow-Headers", "Content-Type")
@@ -20,18 +21,23 @@ export default async function handler(
     const client = await clientPromise
     const db = client.db(process.env.MONGODB_DB || "MENG")
 
-    // ✅ 가장 최근 updatedAt 기준으로 정렬된 한 건만 가져오기
+    // ✅ 가장 최신 updatedAt 순으로 정렬 후 1개만 가져오기
     const record = await db
       .collection("strengths")
       .find({ email })
-      .sort({ updatedAt: -1 }) // 최신순
+      .sort({ updatedAt: -1 })
       .limit(1)
       .next()
 
-    console.log("[get-strengths] 찾은 기록:", record)
+    console.log("[get-strengths] 최신 데이터:", record)
 
     if (!record || !Array.isArray(record.strengths) || record.strengths.length !== 3) {
-      return res.status(200).json({ open: [], blind: [], hidden: [], unknown: [] })
+      return res.status(200).json({
+        open: [],
+        blind: [],
+        hidden: [],
+        unknown: [],
+      })
     }
 
     const [g1, g2, g3] = record.strengths
