@@ -27,13 +27,10 @@ export default async function handler(
 
     const [g1, g2, g3] = record.strengths
 
-    const open = g1.filter((k) => g2.includes(k))
-    const blind = g2.filter((k) => !g1.includes(k))
-    const hidden = g1.filter((k) => !g2.includes(k))
+    const open = g1.filter((k: string) => g2.includes(k))
+    const blind = g2.filter((k: string) => !g1.includes(k))
+    const hidden = g1.filter((k: string) => !g2.includes(k))
     const unknown = g3
-
-console.log("[get-strengths] 정상 작동 중");
-
 
     return res.status(200).json({ open, blind, hidden, unknown })
   } catch (err) {
