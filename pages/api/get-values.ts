@@ -32,7 +32,7 @@ export default async function handler(
     console.log("[get-values] 최신 record:", record);
 
     const topValuesArray = Array.isArray(record?.topValues)
-      ? record.topValues.slice(0, 5)
+      ? record.topValues.slice(0, 3)
       : [];
 
     console.log("[get-values] 최종 topValues:", topValuesArray);
