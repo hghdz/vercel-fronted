@@ -40,6 +40,7 @@ export default async function handler(
       })
     }
 
+       
     const [g1, g2, g3] = record.strengths
 
     const open = g1.filter((k: string) => g2.includes(k))
