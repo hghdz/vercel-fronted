@@ -1,17 +1,6 @@
+// /pages/api/save-strengths.ts
 import type { NextApiRequest, NextApiResponse } from "next"
-import clientPromise from "../../lib/mongodb" // 상대경로: vercel-clean/lib/mongodb.ts
-
-type StrengthsData = {
-  email: string
-  name?: string | null
-  strengths: {
-    open: string[]
-    blind: string[]
-    hidden: string[]
-    unknown: string[]
-  }
-  updatedAt: Date
-}
+import clientPromise from "../../lib/mongodb"
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,32 +11,20 @@ export default async function handler(
   }
 
   try {
-    // email, name, strengths 객체 받기
-    const { email, name, strengths } = req.body as {
+    const { email, strengths } = req.body as {
       email: string
-      name?: string | null
-      strengths: {
-        open: string[]
-        blind: string[]
-        hidden: string[]
-        unknown: string[]
-      }
-    }
-
-    if (!email || !strengths) {
-      return res.status(400).json({ message: "email, strengths 필수!" })
+      strengths: string[][]    // 중요! 2차원 배열 형태로 받음
     }
 
     const client = await clientPromise
-    const db = client.db("MENG")
-    const collection = db.collection<StrengthsData>("strengths")
+    const db = client.db(process.env.MONGODB_DB || "MENG")
+    const collection = db.collection("strengths")
 
     const filter = { email }
     const update = {
       $set: {
-        name: name ?? null,
         strengths,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
     }
     const options = { upsert: true }
