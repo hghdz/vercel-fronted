@@ -55,4 +55,8 @@ export default async function handler(
     await collection.updateOne(filter, update, options)
 
     res.status(200).json({ message: "Success" })
-  } ca
+  } catch (error) {
+    console.error("Error saving strengths:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
